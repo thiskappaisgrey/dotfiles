@@ -1,0 +1,17 @@
+"*":
+  core:
+    telemetryConsent: "limited"
+    themes: [
+      "atom-material-ui"
+      "solarized-dark-syntax"
+    ]
+  editor:
+    tabType: "soft"
+  "exception-reporting":
+    userId: "5a61557b-c9e2-5bf9-7220-464803070af0"
+  minimap: {}
+  "tree-view":
+    hideIgnoredNames: true
+    hideVcsIgnoredFiles: true
+  welcome:
+    showOnStartup: false

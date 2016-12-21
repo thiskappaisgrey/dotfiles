@@ -1,0 +1,22 @@
+set number
+set showcmd
+set ruler 
+
+
+set nocompatible              
+filetype off 
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Bundle "tpope/vim-pathogen"
+Bundle 'sophacles/vim-processing'
+
+call vundle#end()            
+filetype plugin indent on
+syntax on
+
+execute pathogen#infect()
+
+syntax enable
+set background=dark
+colorscheme solarized
