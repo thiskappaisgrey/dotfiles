@@ -1,8 +1,8 @@
 set number
 set showcmd
 set ruler 
-
-
+:inoremap ( ()<Esc>i
+:inoremap { {}<Esc>i
 set nocompatible              
 filetype off 
 set rtp+=~/.vim/bundle/Vundle.vim
