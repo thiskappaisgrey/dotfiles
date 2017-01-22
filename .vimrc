@@ -10,7 +10,10 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Bundle "tpope/vim-pathogen"
 Bundle 'sophacles/vim-processing'
-
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-javascript'
+Plugin 'Valloric/YouCompleteMe'
+Plugin 'Townk/vim-autoclose'
 call vundle#end()            
 filetype plugin indent on
 syntax on

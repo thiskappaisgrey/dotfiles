@@ -1,10 +1,9 @@
 export ZSH=/Users/Thanawat/.oh-my-zsh
 
-ZSH_THEME="robbyrussell"
-
+ZSH_THEME="agnoster"
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
-
+alias vim='mvim -v'
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
