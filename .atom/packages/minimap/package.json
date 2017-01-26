@@ -2,40 +2,40 @@
   "_args": [
     [
       {
-        "raw": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
+        "raw": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
         "scope": null,
         "escapedName": null,
         "name": null,
-        "rawSpec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
-        "spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
+        "rawSpec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
+        "spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
         "type": "local"
       },
-      "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/apm-install-dir-117016-35550-xsoefs"
+      "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/apm-install-dir-117025-55025-1g7r33r"
     ]
   ],
-  "_from": "../d-117016-35550-1nerca7/package.tgz",
-  "_id": "minimap@4.26.6",
+  "_from": "../d-117025-55025-10cbiuk/package.tgz",
+  "_id": "minimap@4.26.7",
   "_inCache": true,
   "_installable": true,
   "_location": "/minimap",
   "_phantomChildren": {},
   "_requested": {
-    "raw": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
+    "raw": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
     "scope": null,
     "escapedName": null,
     "name": null,
-    "rawSpec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
-    "spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
+    "rawSpec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
+    "spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
     "type": "local"
   },
   "_requiredBy": [
     "#USER"
   ],
-  "_resolved": "file:../d-117016-35550-1nerca7/package.tgz",
-  "_shasum": "628d51c63f8034c970933931867a4b5ad58a535d",
+  "_resolved": "file:../d-117025-55025-10cbiuk/package.tgz",
+  "_shasum": "205ff2c5e527765a4f4dc12bcb7829037348e5be",
   "_shrinkwrap": null,
-  "_spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117016-35550-1nerca7/package.tgz",
-  "_where": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/apm-install-dir-117016-35550-xsoefs",
+  "_spec": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/d-117025-55025-10cbiuk/package.tgz",
+  "_where": "/private/var/folders/sm/_6w_tjps6w32gbyf1rzz723w0000gn/T/apm-install-dir-117025-55025-1g7r33r",
   "author": {
     "name": "Fangdun Cai",
     "email": "cfddream@gmail.com"
@@ -247,7 +247,7 @@
       "MouseEvent"
     ]
   },
-  "version": "4.26.6",
+  "version": "4.26.7",
   "viewProviders": [
     "minimapViewProvider"
   ]
