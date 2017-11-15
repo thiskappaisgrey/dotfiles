@@ -1,4 +1,0 @@
-'.source.processing':
-  'editor':
-    'commentStart': '// '
-    'increaseIndentPattern': '^.*(\\{[^}"\']*|\\([^)"\']*)$'

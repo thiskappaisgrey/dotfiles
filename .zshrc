@@ -1,18 +1,21 @@
 export ZSH=/Users/Thanawat/.oh-my-zsh
 
-ZSH_THEME="agnoster"
+ZSH_THEME="powerlevel9k/powerlevel9k"
+
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
-alias vim='mvim -v'
 export NODE_PATH="/usr/local/lib/node_modules"
-
+export ANDROID_HOME=~/Library/Android/sdk
+export PATH=${PATH}:${ANDROID_HOME}/tools
+export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
 export PATH="/usr/local/bin:$PATH"
 # Uncomment the following line to disable bi-weekly auto-update checks.
 # DISABLE_AUTO_UPDATE="true"
-
+export NODE_ENV=development
+export BABEL_ENV=$NODE_ENV
 # Uncomment the following line to change how often to auto-update (in days).
 # export UPDATE_ZSH_DAYS=13
 
@@ -77,10 +80,5 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-prompt_context() {
-prompt_context() {
-  if [[ "$USER" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-    prompt_segment black default "%(!.%{%F{yellow}%}.)$"
-  fi
-}
-}
+prompt_context () { }
+alias nasm="/usr/local/bin/nasm"
