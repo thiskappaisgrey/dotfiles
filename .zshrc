@@ -1,13 +1,12 @@
 export ZSH=/Users/Thanawat/.oh-my-zsh
 
 ZSH_THEME="powerlevel9k/powerlevel9k"
-
+POWERLEVEL9K_MODE='nerdfont-complete'
+POWERLEVEL9K_HOME_ICON='\uf015'
+POWERLEVEL9K_VCS_ICON='\uf406'
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
 export NODE_PATH="/usr/local/lib/node_modules"
-export ANDROID_HOME=~/Library/Android/sdk
-export PATH=${PATH}:${ANDROID_HOME}/tools
-export PATH=${PATH}:${ANDROID_HOME}/platform-tools
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
@@ -82,3 +81,4 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 prompt_context () { }
 alias nasm="/usr/local/bin/nasm"
+alias vim="/usr/local/bin/nvim"
