@@ -50,7 +50,12 @@ let g:ale_javascript_prettier_use_local_config = 1
 let g:jsx_ext_required = 0
 let g:closetag_filenames = "*.html, *.js"
 let mapleader = '\'
-
+let g:webdevicons_enable = 1
+let g:webdevicons_enable_nerdtree = 1
+let g:webdevicons_enable_airline_tabline = 1
+let g:webdevicons_enable_airline_statusline = 1
+let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols = {}
+let g:WebDevIconsUnicodeDecorateFileNodesExtensionSymbols['js']=''
 set nowrap
 set number
 set expandtab
