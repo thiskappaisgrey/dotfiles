@@ -1,32 +1,14 @@
 export ZSH=/Users/Thanawat/.oh-my-zsh
-
 export TERM="xterm-256color"
-ZSH_THEME="powerlevel9k/powerlevel9k"
-POWERLEVEL9K_MODE='nerdfont-complete'
-POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status battery os_icon)
-POWERLEVEL9K_APPLE_ICON='\ue711'
-POWERLEVEL9K_USER_ICON='\ue780'
-POWERLEVEL9K_HOME_ICON='\uf015'
-POWERLEVEL9K_FOLDER_ICON='\ue5ff'
-POWERLEVEL9K_HOME_SUB_ICON='\uf115'
-POWERLEVEL9K_SHORTEN_STRATEGY="truncate_with_package_name"
-POWERLEVEL9K_DIR_PACKAGE_FILES=(package.json)
-POWERLEVEL9K_PROMPT_ON_NEWLINE=true
-POWERLEVEL9K_VCS_GIT_GITHUB_ICON='\uf406'
-POWERLEVEL9K_VCS_BRANCH_ICON='\uf418'
-POWERLEVEL9K_VCS_UNSTAGED_ICON='\uf41b'
-POWERLEVEL9K_VCS_STAGED_ICON='\uf055'
-POWERLEVEL9K_VCS_OUTGOING_CHANGES_ICON='\uf01b'
-POWERLEVEL9K_VCS_INCOMING_CHANGES_ICON='\uf01a'
+export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig"
+ZSH_THEME="spaceship"
+ZSH_TMUX_AUTOSTART=false
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
-export NODE_PATH="/usr/local/lib/node_modules"
 export EDITOR='nvim'
-
 # Uncomment the following line to use hyphen-insensitive completion. Case
 # sensitive completion must be off. _ and - will be interchangeable.
 # HYPHEN_INSENSITIVE="true"
-export PATH="/usr/local/bin:$PATH"
 # Uncomment the following line to disable bi-weekly auto-update checks.
 # DISABLE_AUTO_UPDATE="true"
 export NODE_ENV=development
@@ -70,9 +52,11 @@ brew
 npm
 osx
 tmux
+zsh-nvm
 )
 
 source $ZSH/oh-my-zsh.sh
+source $(dirname $(gem which colorls))/tab_complete.sh
 
 # User configuration
 
@@ -105,3 +89,6 @@ source $ZSH/oh-my-zsh.sh
 prompt_context () { }
 alias nasm="/usr/local/bin/nasm"
 alias vim="/usr/local/bin/nvim"
+alias nr="npm run"
+alias nrd="npm run develop"
+alias nrt="npm run test"
