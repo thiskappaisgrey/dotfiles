@@ -3,6 +3,8 @@
 
 # Path to your oh-my-zsh installation.
 export ZSH="/home/thanawat/.oh-my-zsh"
+export VISUAL=emacs
+export EDITOR="nvim"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -10,6 +12,9 @@ export ZSH="/home/thanawat/.oh-my-zsh"
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 ZSH_THEME="spaceship"
 
+# Spaceship Theme Configuration: check https://denysdovhan.com/spaceship-prompt/docs/Options.html#exit-code-exit_code
+SPACESHIP_TIME_SHOW=true
+SPACESHIP_TIME_12HR=true
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
 # a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
@@ -68,7 +73,10 @@ ZSH_THEME="spaceship"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(
+	git 
+	zsh-syntax-highlighting
+	)
 
 source $ZSH/oh-my-zsh.sh
 
