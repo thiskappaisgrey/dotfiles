@@ -25,6 +25,8 @@
 ;; `nil' to disable it:
 (setq display-line-numbers-type 'relative)
 
+(add-to-list 'default-frame-alist '(fullscreen . maximized))
+
 (setq doom-theme 'doom-one)
 
 (setq evil-escape-key-sequence "fd")
