@@ -7,8 +7,7 @@ do
 	if [ ! -d $f ]
 	then
 		echo "creating symlinks in home dir"
-		ln $f ~/$f
+		ln -s $f ~/$f
 	fi
 done
-ln -s "$(pwd)/.atom" ~/.atom
 	
