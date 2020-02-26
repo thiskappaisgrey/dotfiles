@@ -17,9 +17,24 @@
 ;; they are implemented.
 
 (setq user-full-name "Thanawat Techaumnuaiwit"
-      user-mail-address "thanatechaumnuaiwit@gmail.com")
+      user-mail-address "thanawat@ucsb.edu")
+(set-email-account! "umail"
+                    '((user-mail-address      . "thanawat@ucsb.edu")
+                      (smtpmail-smtp-user     . "thanawat@ucsb.edu")
+                      (user-full-name         . "Thanawat Techaumnuaiwit")
+                      (smtpmail-smtp-server   . "smtp.gmail.com")
+                      (smtpmail-smtp-service  . 587)
+                      (smtpmail-stream-type   . starttls)
+                      (smtpmail-debug-info    . t)
+                      (mu4e-drafts-folder     . "/Drafts")
+                      (mu4e-refile-folder     . "/Archive")
+                      (mu4e-sent-folder       . "/Sent Items")
+                      (mu4e-trash-folder      . "/Deleted Items")
+                      (mu4e-update-interval   . 1800)))
 
-(setq doom-font (font-spec :family "monospace" :size 14))
+(setq doom-font (font-spec :family "Hasklug Nerd Font" :size 18))
+(after! pretty-code
+  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
@@ -27,8 +42,34 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-one)
+(use-package! all-the-icons-dired
+  :init
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+
+(setq doom-theme 'doom-spacegrey)
 
 (setq evil-escape-key-sequence "fd")
 
 (setq org-directory "~/org/")
+
+(after! org
+  (add-to-list 'org-capture-templates '("e" "Calendar Event" entry (file "~/org/calendar.org" "* TODO %?\n  %i\n  %a"))
+               )
+)
+
+(use-package! anki-editor
+  :config
+  (setq anki-editor-create-decks t))
+
+(map! :localleader
+      :map org-mode-map
+      (:prefix ("k" . "Anki")
+        :desc "Push" "p" 'anki-editor-push-notes
+        :desc "Retry" "r" 'anki-editor-retry-failure-notes
+        :desc "Insert" "n" 'anki-editor-insert-note
+        (:prefix ("c" . "Cloze")
+          :desc "Dwim" "d" 'anki-editor-cloze-dwim
+          :desc "Region" "r" 'anki-editor-cloze-region
+          )
+        )
+ )

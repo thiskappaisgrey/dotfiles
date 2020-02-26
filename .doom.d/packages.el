@@ -10,8 +10,8 @@
 ;; Doom requires these, and disabling them may have terrible side effects.
 ;;
 ;; Here are a couple examples:
-
-
+(package! anki-editor)
+(package! all-the-icons-dired)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
