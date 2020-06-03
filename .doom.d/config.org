@@ -48,6 +48,7 @@ Keep for refrence later..
 (setq doom-font (font-spec :family "Hasklug Nerd Font" :size 18))
 (after! pretty-code
   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+(setq tab-width 2)
 #+END_SRC
 ** Line Numbers
 #+BEGIN_SRC elisp
@@ -68,7 +69,7 @@ Keep for refrence later..
 
 ** Theme
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-spacegrey)
+(setq doom-theme 'doom-dark+)
 #+END_SRC
 * Keybindings
 ** Evil
@@ -79,14 +80,27 @@ Keep for refrence later..
 #+BEGIN_SRC elisp
 (setq org-directory "~/org/")
 #+END_SRC
-** Org Capture Templates
+** Org settings
 #+BEGIN_SRC elisp
 (after! org
-  (add-to-list 'org-capture-templates '("e" "Calendar Event" entry (file "~/org/calendar.org" "* TODO %?\n  %i\n  %a"))
-               )
-)
+  (add-to-list 'org-capture-templates '("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n  %a"))
+  (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines))
+  (setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  )
 
 #+END_SRC
+** mermaid
+#+BEGIN_SRC elisp
+(use-package ob-mermaid
+  :config
+  (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
+#+END_SRC
+
 ** Anki
 #+BEGIN_SRC elisp
 (use-package! anki-editor
@@ -105,4 +119,17 @@ Keep for refrence later..
           )
         )
  )
+#+END_SRC
+
+* python
+#+BEGIN_SRC elisp
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
+#+END_SRC
+
+* Jupyter
+#+BEGIN_SRC elisp
+(use-package! ein
+  :config
+  (setq ein:output-area-inlined-images t))
 #+END_SRC

@@ -35,6 +35,7 @@
 (setq doom-font (font-spec :family "Hasklug Nerd Font" :size 18))
 (after! pretty-code
   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+(setq tab-width 2)
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
@@ -46,16 +47,26 @@
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
-(setq doom-theme 'doom-spacegrey)
+(setq doom-theme 'doom-dark+)
 
 (setq evil-escape-key-sequence "fd")
 
 (setq org-directory "~/org/")
 
 (after! org
-  (add-to-list 'org-capture-templates '("e" "Calendar Event" entry (file "~/org/calendar.org" "* TODO %?\n  %i\n  %a"))
-               )
-)
+  (add-to-list 'org-capture-templates '("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n  %a"))
+  (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines))
+  (setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  )
+
+(use-package ob-mermaid
+  :config
+  (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
 
 (use-package! anki-editor
   :config
@@ -73,3 +84,10 @@
           )
         )
  )
+
+(setq python-shell-interpreter "python3"
+     flycheck-python-pycompile-executable "python3")
+
+(use-package! ein
+  :config
+  (setq ein:output-area-inlined-images t))

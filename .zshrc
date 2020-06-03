@@ -8,10 +8,16 @@ fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$PATH:/snap/bin
+export PATH=$PATH:~/.local/bin
+export PATH=$PATH:~/node_modules/.bin
 # Path to your oh-my-zsh installation.
 export ZSH="/home/thanawat/.oh-my-zsh"
-export VISUAL="emacsclient"
+export VISUAL="emacsclient -c"
 export EDITOR="emacsclient"
+# Pyenv
+export PATH="/home/thanawat/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -84,6 +90,7 @@ plugins=(
 	git 
 	zsh-syntax-highlighting
   autojump
+  debian
 	)
 
 source $ZSH/oh-my-zsh.sh

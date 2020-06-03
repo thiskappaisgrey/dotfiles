@@ -12,6 +12,8 @@
 ;; Here are a couple examples:
 (package! anki-editor)
 (package! all-the-icons-dired)
+(package! ob-mermaid)
+(package! ein)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
