@@ -69,7 +69,7 @@ Keep for refrence later..
 
 ** Theme
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-dark+)
+(setq doom-theme 'doom-nord)
 #+END_SRC
 * Keybindings
 ** Evil

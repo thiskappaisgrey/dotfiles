@@ -47,7 +47,7 @@
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
-(setq doom-theme 'doom-dark+)
+(setq doom-theme 'doom-nord)
 
 (setq evil-escape-key-sequence "fd")
 
@@ -85,8 +85,8 @@
         )
  )
 
-(setq python-shell-interpreter "python3"
-     flycheck-python-pycompile-executable "python3")
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
 
 (use-package! ein
   :config
