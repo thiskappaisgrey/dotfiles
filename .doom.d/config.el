@@ -91,3 +91,12 @@
 (use-package! ein
   :config
   (setq ein:output-area-inlined-images t))
+
+(use-package! nov
+  :mode ("\\.epub\\'" . nov-mode)
+  :config
+  (setq nov-save-place-file (concat doom-cache-dir "nov-places")))
+
+(after! elfeed
+  (setq elfeed-search-filter "@1-month-ago +unread"))
+(add-hook! 'elfeed-search-mode-hook 'elfeed-update)
