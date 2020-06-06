@@ -6,3 +6,5 @@
 [user]
 	name = ThisKappaIsGrey
 	email = thanatechaumnuaiwit@gmail.com
+[core]
+	excludesfile = ~/.gitignore-global
