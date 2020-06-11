@@ -91,6 +91,7 @@ Keep for refrence later..
       org-latex-pdf-process
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  (setq org-re-reveal-root "~/reveal.js/")
   )
 
 #+END_SRC
@@ -121,12 +122,6 @@ Keep for refrence later..
  )
 #+END_SRC
 
-* python
-#+BEGIN_SRC elisp
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
-#+END_SRC
-
 * Jupyter
 #+BEGIN_SRC elisp
 (use-package! ein
@@ -147,4 +142,23 @@ Keep for refrence later..
 (after! elfeed
   (setq elfeed-search-filter "@1-month-ago +unread"))
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+#+END_SRC
+* Code
+** lsp
+#+BEGIN_SRC elisp
+(after! lsp-mode
+  (setq lsp-vetur-format-options-tab-size 4))
+#+END_SRC
+
+** c
+#+BEGIN_SRC elisp
+(after! cc-mode
+  (setq c-basic-offset 2)
+  (setq tab-width 2))
+
+#+END_SRC
+** python
+#+BEGIN_SRC elisp
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
 #+END_SRC

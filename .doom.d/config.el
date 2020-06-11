@@ -62,6 +62,7 @@
       org-latex-pdf-process
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  (setq org-re-reveal-root "~/reveal.js/")
   )
 
 (use-package ob-mermaid
@@ -85,9 +86,6 @@
         )
  )
 
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
-
 (use-package! ein
   :config
   (setq ein:output-area-inlined-images t))
@@ -100,3 +98,13 @@
 (after! elfeed
   (setq elfeed-search-filter "@1-month-ago +unread"))
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+
+(after! lsp-mode
+  (setq lsp-vetur-format-options-tab-size 4))
+
+(after! cc-mode
+  (setq c-basic-offset 2)
+  (setq tab-width 2))
+
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
