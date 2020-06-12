@@ -32,7 +32,7 @@
                       (mu4e-trash-folder      . "/Deleted Items")
                       (mu4e-update-interval   . 1800)))
 
-(setq doom-font (font-spec :family "Hasklug Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! pretty-code
   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 (setq tab-width 2)
@@ -106,5 +106,5 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
+(setq python-shell-interpreter "python3"
+     flycheck-python-pycompile-executable "python3")
