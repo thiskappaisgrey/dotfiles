@@ -1,5 +1,5 @@
 -- My Xmonad config
-
+-- Instructions to use stack for xmonad https://brianbuccola.com/how-to-install-xmonad-and-xmobar-via-stack/
 --- Imports ---
 
 -- Base
@@ -27,21 +27,6 @@ windowCount = gets $ Just . show . length . W.integrate' . W.stack . W.workspace
 myWorkspaces :: [String]
 myWorkspaces = ["dev", "www", "proc", "mus", "game", "chat", "vid", "other", "other2"]
 
--- can also use amixer too
--- use pacmd to set the microphone volume: https://askubuntu.com/questions/27021/setting-microphone-input-volume-using-the-command-line
--- xbacklight controls the brightness: https://wiki.archlinux.org/index.php/backlight#xbacklight and https://askubuntu.com/questions/715306/xbacklight-no-outputs-have-backlight-property-no-sys-class-backlight-folder
--- xf86-video-intel
-myKeys :: [([Char], X ())]
-myKeys = [ ("<XF86AudioMute>",   spawn "amixer set Master toggle")  -- Bug prevents it from toggling correctly in 12.04.
-        , ("<XF86AudioLowerVolume>", spawn "amixer set Master 5%- unmute")
-        , ("<XF86AudioRaiseVolume>", spawn "amixer set Master 5%+ unmute")
-        --("<XF86AudioMute>", spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle") -- use pactl b/c amixer didn't work
-         --, ("<XF86AudioLowerVolume>", spawn "pactl set-sink-volume @DEFAULT_SINK@ -10%")
-         --, ("<XF86AudioRaiseVolume>", spawn "pactl set-sink-volume @DEFAULT_SINK@ +10%")
-         , ("<XF86MonBrightnessUp>", spawn "xbacklight -inc 10")
-         , ("<XF86MonBrightnessDown>", spawn "xbacklight -dec 10")
-         , ("M-f", spawn "emacsclient -create-frame --alternate-editor=\"\" ")
-        ]
 
 -- Scratchpads, very useful feature
 myScratchPads :: [NamedScratchpad]
@@ -66,6 +51,22 @@ myScratchPads = [ NS "terminal" spawnTerm findTerm manageTerm
                  l = 0.95 - w
 
 
+myKeys :: [([Char], X ())]
+myKeys = [
+        -- use amixer to set the microphone volume: https://askubuntu.com/questions/27021/setting-microphone-input-volume-using-the-command-line
+        -- xbacklight controls the brightness: https://wiki.archlinux.org/index.php/backlight#xbacklight and https://askubuntu.com/questions/715306/xbacklight-no-outputs-have-backlight-property-no-sys-class-backlight-folder
+        -- xf86-video-intel
+        ("<XF86AudioMute>",   spawn "amixer set Master toggle")  -- Bug prevents it from toggling correctly in 12.04.
+        , ("<XF86AudioLowerVolume>", spawn "amixer set Master 5%- unmute")
+        , ("<XF86AudioRaiseVolume>", spawn "amixer set Master 5%+ unmute")
+        --("<XF86AudioMute>", spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle") -- use pactl b/c amixer didn't work
+         --, ("<XF86AudioLowerVolume>", spawn "pactl set-sink-volume @DEFAULT_SINK@ -10%")
+         --, ("<XF86AudioRaiseVolume>", spawn "pactl set-sink-volume @DEFAULT_SINK@ +10%")
+         , ("<XF86MonBrightnessUp>", spawn "brightnessctl s +10%")
+         , ("<XF86MonBrightnessDown>", spawn "brightnessctl s 10%-")
+         , ("M-f", spawn "emacsclient -create-frame --alternate-editor=\"\" ")
+         , ("M-C-s", namedScratchpadAction myScratchPads "spotify")
+        ]
 main:: IO()
 main =
   do
@@ -96,3 +97,4 @@ main =
 myStartupHook :: X()
 myStartupHook = do
   spawnOnce "feh --bg-scale ~/pikachu.jpg"
+  spawnOnce "emacs --daemon"
