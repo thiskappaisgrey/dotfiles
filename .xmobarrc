@@ -1,9 +1,10 @@
+-- Use the Nord theme: https://www.nordtheme.com/docs/colors-and-palettes
 Config { 
 
    -- appearance
-     font =         "xft:Source Code Pro:pixelsize=14:antialias=true:hinting=true"
-   , bgColor =      "#4C566A"
-   , fgColor =      "white"
+     font =         "xft:mononoki Nerd Font:pixelsize=14:antialias=true:hinting=true"
+   , bgColor =      "#2E3440"
+   , fgColor =      "#D8DEE9"
    , position =     Top
    , border =       BottomB
    , borderColor =  "#646464"
@@ -11,7 +12,7 @@ Config {
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%StdinReader% }{ %multicpu% | %memory% |  %mpris2%  | %battery% | %date%"
+   , template = "%StdinReader% }{ %KSFO% | %multicpu%| %memory% | %mpris2% | %bat1% | %bat0% | %date%"
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
    , hideOnStart =      False   -- start with window unmapped (hidden)
@@ -35,45 +36,84 @@ Config {
    --   color can be set by enclosing in <fc></fc> tags. For more details
    --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
    , commands = 
-        [Run MultiCpu       [ "--template" , "Cpu: <total0>%|<total1>%"
+        [Run MultiCpu       [ "--template" , ": <total0>%|<total1>%"
                              , "--Low"      , "50"         -- units: %
                              , "--High"     , "85"         -- units: %
-                             , "--low"      , "lightgreen"
-                             , "--normal"   , "lightorange"
-                             , "--high"     , "red"
+                             , "--low"      , "#A3BE8C"
+                             , "--normal"   , "#EBCB8B"
+                             , "--high"     , "#BF616A"
                              ] 10
-        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
-                             , "--Low"      , "70"        -- units: °C
-                             , "--High"     , "80"        -- units: °C
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
-                             ] 50
-        , Run Memory         [ "--template" ,"Mem: <usedratio>%"
+        , Run Memory         [ "--template" ,": <usedratio>%"
                              , "--Low"      , "20"        -- units: %
                              , "--High"     , "90"        -- units: %
-                             , "--low"      , "darkgreen"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkred"
+                             , "--low"      , "#BF616A"
+                             , "--normal"   , "#EBCB8B"
+                             , "--high"     , "#A3BE8C"
                              ] 10
-        , Run Battery        [ "--template" , "Batt: <acstatus>"
+
+        -- Dual battery setup for thinkpad
+        , Run BatteryN ["BAT0"]
+                       [ "--template" , "<acstatus>"
                              , "--Low"      , "10"        -- units: %
                              , "--High"     , "80"        -- units: %
-                             , "--low"      , "darkred"
-                             , "--normal"   , "darkorange"
-                             , "--high"     , "darkgreen"
-
+                             , "--low"      , "#BF616A"
+                             , "--normal"   , "#EBCB8B"
+                             , "--high"     , "#A3BE8C"
                              , "--" -- battery specific options
-                                       -- discharging status
-                                       , "-o"	, "<left>% (<timeleft>)"
+                                       -- discharging status - use icons
+                                       , "-l"   ,  "#BF616A"
+                                       , "-m"   ,  "#EBCB8B"
+                                       , "-h"   ,  "#A3BE8C"
+                                       , "-o"   , ""
+                                       , "--lows"     , ": <left>% <timeleft>"
+                                       , "--mediums"  , ": <left>% <timeleft>"
+                                       , "--highs"    , ": <<left>% <timeleft>"
                                        -- AC "on" status
-                                       , "-O"	, "<fc=#dAA520>Charging</fc>"
+                                       , "-O"  , ": <left>% <timeleft>"
                                        -- charged status
-                                       , "-i"	, "<fc=#006000>Charged</fc>"
-                             ] 50
-        , Run Date           "<fc=#ABABAB>%F (%a) %T</fc>" "date" 10
-        , Run Mpris2 "spotify" ["--template", "<artist> - <title>"
-                               , "--maxwidth", "20"] 10
+                                       , "-i"  , ""
+                             ] 50 "bat0"
+        , Run BatteryN ["BAT1"]
+                       [ "--template" , "<acstatus>"
+                             , "--Low"      , "10"        -- units: %
+                             , "--High"     , "80"        -- units: %
+                             , "--low"      , "#BF616A"
+                             , "--normal"   , "#EBCB8B"
+                             , "--high"     , "#A3BE8C"
+                             , "--" -- battery specific options
+                                       -- discharging status - use icons
+                                       , "-l"   ,  "#BF616A"
+                                       , "-m"   ,  "#EBCB8B"
+                                       , "-h"   ,  "#A3BE8C"
+                                       , "-o"   , ""
+                                       , "--lows"     , ": <left>% <timeleft>"
+                                       , "--mediums"  , ": <left>% <timeleft>"
+                                       , "--highs"    , ": <left>% <timeleft>"
+                                       -- AC "on" status
+                                       , "-O"  , " <left>% <timeleft>"
+                                       -- charged status
+                                       , "-i"  , ""
+                             ] 50 "bat1"
+        , Run Date           "%a <fc=#EBCB8B>%H:%M</fc>" "date" 10
+        , Run Mpris2 "spotify" ["--template", "阮 <artist> - <title>"
+                               , "--maxwidth", "15"] 10
+        -- TODO
+        , Run   WeatherX "KSFO"-- used to find weather station: https://en.wikipedia.org/wiki/Location_identifier
+           [ ("clear", "望")
+           , ("sunny", "")
+           , ("mostly clear", "")
+           , ("mostly sunny", "盛")
+           , ("partly sunny", "")
+           , ("fair", "")
+           , ("cloudy","")
+           , ("overcast","")
+           , ("partly cloudy", "杖")
+           , ("mostly cloudy", "")
+           , ("considerable cloudiness", "")]
+           ["-t", "<skyConditionS> <tempF>宅  <rh>%  <windKmh>"
+           , "-L","10", "-H", "25", "--normal", "#646464"
+           , "--high", "#EBCB8B", "--low", "#A3BE8C"]
+           18000
         , Run StdinReader
         ]
    }

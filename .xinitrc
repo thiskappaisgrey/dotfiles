@@ -1,1 +1,1 @@
-exec xmonad
+exec ~/.local/bin/xmonad

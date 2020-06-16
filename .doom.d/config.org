@@ -144,6 +144,7 @@ Keep for refrence later..
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
 #+END_SRC
 * Code
+
 ** lsp
 #+BEGIN_SRC elisp
 (after! lsp-mode
@@ -161,4 +162,9 @@ Keep for refrence later..
 #+BEGIN_SRC elisp
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
+#+END_SRC
+** color
+#+BEGIN_SRC elisp
+(add-hook! 'rainbow-mode-hook
+  (hl-line-mode (if rainbow-mode -1 +1)))
 #+END_SRC

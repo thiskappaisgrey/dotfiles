@@ -106,5 +106,8 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
-(setq python-shell-interpreter "python3"
-     flycheck-python-pycompile-executable "python3")
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
+
+(add-hook! 'rainbow-mode-hook
+  (hl-line-mode (if rainbow-mode -1 +1)))
