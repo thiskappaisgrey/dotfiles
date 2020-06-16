@@ -12,7 +12,7 @@ Config {
    -- layout
    , sepChar =  "%"   -- delineator between plugin names and straight text
    , alignSep = "}{"  -- separator between left-right alignment
-   , template = "%StdinReader% }{ %KSFO% | %multicpu%| %memory% | %mpris2% | %bat1% | %bat0% | %date%"
+   , template = "%StdinReader% }{ %KSFO% | %multicpu%| %memory% | %mpris2% | %alsa:default:Master% | %bat1% | %bat0% | %date%"
    -- general behavior
    , lowerOnStart =     True    -- send to bottom of window stack on start
    , hideOnStart =      False   -- start with window unmapped (hidden)
@@ -98,7 +98,7 @@ Config {
         , Run Mpris2 "spotify" ["--template", "阮 <artist> - <title>"
                                , "--maxwidth", "15"] 10
         -- TODO
-        , Run   WeatherX "KSFO"-- used to find weather station: https://en.wikipedia.org/wiki/Location_identifier
+        , Run   WeatherX "KSFO"--  https://en.wikipedia.org/wiki/List_of_airports_by_ICAO_code:_K#K_%E2%80%93_United_States
            [ ("clear", "望")
            , ("sunny", "")
            , ("mostly clear", "")
@@ -113,7 +113,18 @@ Config {
            ["-t", "<skyConditionS> <tempF>宅  <rh>%  <windKmh>"
            , "-L","10", "-H", "25", "--normal", "#646464"
            , "--high", "#EBCB8B", "--low", "#A3BE8C"]
-           18000
+           1800
         , Run StdinReader
+        , Run Alsa "default" "Master" [
+          "--template" , "<status>"
+          , "--"
+          , "-C" , "#A3BE8C"
+          , "-c" , "#BF616A"
+          , "-O", "<volume>%"
+          , "-o", "ﱝ"
+          , "--highs", " "
+          , "--mediums", "墳 "
+          , "--lows", "奔 "
+        ]
         ]
    }
