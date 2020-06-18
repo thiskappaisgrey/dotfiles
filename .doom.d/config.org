@@ -45,9 +45,9 @@ Keep for refrence later..
 * Aesthetics
 ** Font
 #+BEGIN_SRC elisp
-(setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
-(after! pretty-code
-  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
+;; (after! pretty-code
+;;   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 (setq tab-width 2)
 #+END_SRC
 ** Line Numbers
@@ -70,6 +70,12 @@ Keep for refrence later..
 ** Theme
 #+BEGIN_SRC elisp
 (setq doom-theme 'doom-nord)
+#+END_SRC
+** Frame title
+#+BEGIN_SRC elisp
+;; explcitly set the frametitle because otherwise the frame title would show weird characters
+;; https://www.emacswiki.org/emacs/FrameTitle
+(setq frame-title-format "%b - Doom Emacs")
 #+END_SRC
 * Keybindings
 ** Evil
@@ -134,7 +140,11 @@ Keep for refrence later..
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
   :config
-  (setq nov-save-place-file (concat doom-cache-dir "nov-places")))
+  (setq nov-save-place-file (concat doom-cache-dir "nov-places"))
+  (setq nov-text-width t)
+  (setq visual-fill-column-center-text t)
+  (add-hook 'nov-mode-hook 'visual-line-mode)
+  )
 #+END_SRC
 
 * Rss(elfeed)
@@ -165,6 +175,8 @@ Keep for refrence later..
 #+END_SRC
 ** color
 #+BEGIN_SRC elisp
+(after! rgb
 (add-hook! 'rainbow-mode-hook
-  (hl-line-mode (if rainbow-mode -1 +1)))
+(hl-line-mode (if rainbow-mode -1 +1)))
+)
 #+END_SRC

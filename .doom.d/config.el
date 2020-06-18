@@ -32,9 +32,9 @@
                       (mu4e-trash-folder      . "/Deleted Items")
                       (mu4e-update-interval   . 1800)))
 
-(setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
-(after! pretty-code
-  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
+;; (after! pretty-code
+;;   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 (setq tab-width 2)
 
 ;; If you want to change the style of line numbers, change this to `relative' or
@@ -48,6 +48,10 @@
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
 (setq doom-theme 'doom-nord)
+
+;; explcitly set the frametitle because otherwise the frame title would show weird characters
+;; https://www.emacswiki.org/emacs/FrameTitle
+(setq frame-title-format "%b - Doom Emacs")
 
 (setq evil-escape-key-sequence "fd")
 
@@ -93,7 +97,11 @@
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
   :config
-  (setq nov-save-place-file (concat doom-cache-dir "nov-places")))
+  (setq nov-save-place-file (concat doom-cache-dir "nov-places"))
+  (setq nov-text-width t)
+  (setq visual-fill-column-center-text t)
+  (add-hook 'nov-mode-hook 'visual-line-mode)
+  )
 
 (after! elfeed
   (setq elfeed-search-filter "@1-month-ago +unread"))
@@ -109,5 +117,7 @@
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
 
+(after! rgb
 (add-hook! 'rainbow-mode-hook
-  (hl-line-mode (if rainbow-mode -1 +1)))
+(hl-line-mode (if rainbow-mode -1 +1)))
+)

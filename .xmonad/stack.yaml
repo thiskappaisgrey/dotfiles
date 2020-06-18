@@ -28,6 +28,7 @@ resolver: lts-16.0
 #   subdirs:
 #   - auto-update
 #   - wai
+#   Uses a git downloaded version of xmoand.. Probably not great because stack hoogle didn't generate any docs for it but..
 packages:
 - xmobar-git
 - xmonad-git
