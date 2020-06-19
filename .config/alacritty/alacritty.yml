@@ -248,33 +248,173 @@ font:
   #
   #indexed_colors: []
 # Nord Theme for alacritty
-colors:
-  primary:
-    background: '#2E3440'
-    foreground: '#D8DEE9'
-  cursor:
-    text: '#2E3440'
-    cursor: '#D8DEE9'
-  normal:
-    black: '#3B4252'
-    red: '#BF616A'
-    green: '#A3BE8C'
-    yellow: '#EBCB8B'
-    blue: '#81A1C1'
-    magenta: '#B48EAD'
-    cyan: '#88C0D0'
-    white: '#E5E9F0'
-  bright:
-    black: '#4C566A'
-    red: '#BF616A'
-    green: '#A3BE8C'
-    yellow: '#EBCB8B'
-    blue: '#81A1C1'
-    magenta: '#B48EAD'
-    cyan: '#8FBCBB'
-    white: '#ECEFF4'
-# Visual Bell
-#
+# colors:
+#   primary:
+#     background: '#2E3440'
+#     foreground: '#D8DEE9'
+#   cursor:
+#     text: '#2E3440'
+#     cursor: '#D8DEE9'
+#   normal:
+#     black: '#3B4252'
+#     red: '#BF616A'
+#     green: '#A3BE8C'
+#     yellow: '#EBCB8B'
+#     blue: '#81A1C1'
+#     magenta: '#B48EAD'
+#     cyan: '#88C0D0'
+#     white: '#E5E9F0'
+#   bright:
+#     black: '#4C566A'
+#     red: '#BF616A'
+#     green: '#A3BE8C'
+#     yellow: '#EBCB8B'
+#     blue: '#81A1C1'
+#     magenta: '#B48EAD'
+#     cyan: '#8FBCBB'
+#     white: '#ECEFF4'
+schemes:
+        base16-default: &base16-default
+                primary:
+                        background: '0x181818'
+                        foreground: '0xd8d8d8'
+                cursor:
+                        text: '0x181818'
+                        cursor: '0xd8d8d8'
+                normal:
+                        black:   '0x181818'
+                        red:     '0xab4642'
+                        green:   '0xa1b56c'
+                        yellow:  '0xf7ca88'
+                        blue:    '0x7cafc2'
+                        magenta: '0xba8baf'
+                        cyan:    '0x86c1b9'
+                        white:   '0xd8d8d8'
+                bright:
+                        black:   '0x585858'
+                        red:     '0xdc9656'
+                        green:   '0x282828'
+                        yellow:  '0x383838'
+                        blue:    '0xb8b8b8'
+                        magenta: '0xe8e8e8'
+                        cyan:    '0xa16946'
+                        white:   '0xf8f8f8'
+
+        base16-default-256: &base16-default-256
+                primary:
+                        background: '#181818'
+                        foreground: '#d8d8d8'
+                cursor:
+                        text: '#d8d8d8'
+                        cursor: '#d8d8d8'
+                normal:
+                        black:   '#181818'
+                        red:     '#ab4642'
+                        green:   '#a1b56c'
+                        yellow:  '#f7ca88'
+                        blue:    '#7cafc2'
+                        magenta: '#ba8baf'
+                        cyan:    '#86c1b9'
+                        white:   '#d8d8d8'
+                bright:
+                        black:   '#585858'
+                        red:     '#ab4642'
+                        green:   '#a1b56c'
+                        yellow:  '#f7ca88'
+                        blue:    '#7cafc2'
+                        magenta: '#ba8baf'
+                        cyan:    '#86c1b9'
+                        white:   '#f8f8f8'
+
+        base16-gruvbox-dark-hard: &base16-gruvbox-dark-hard
+                primary:
+                        background: '0x1d2021'
+                        foreground: '0xd5c4a1'
+                cursor:
+                        text: '0x1d2021'
+                        cursor: '0xd5c4a1'
+                normal:
+                        black:   '0x1d2021'
+                        red:     '0xfb4934'
+                        green:   '0xb8bb26'
+                        yellow:  '0xfabd2f'
+                        blue:    '0x83a598'
+                        magenta: '0xd3869b'
+                        cyan:    '0x8ec07c'
+                        white:   '0xd5c4a1'
+                bright:
+                        black:   '0x665c54'
+                        red:     '0xfe8019'
+                        green:   '0x3c3836'
+                        yellow:  '0x504945'
+                        blue:    '0xbdae93'
+                        magenta: '0xebdbb2'
+                        cyan:    '0xd65d0e'
+                        white:   '0xfbf1c7'
+        nord: &nord
+                primary:
+                        background: '0x2E3440'
+                        foreground: '0xD8DEE9'
+                cursor:
+                        text: '0x2E3440'
+                        cursor: '0xD8DEE9'
+                normal:
+                        black: '0x3B4252'
+                        red: '0xBF616A'
+                        green: '0xA3BE8C'
+                        yellow: '0xEBCB8B'
+                        blue: '0x81A1C1'
+                        magenta: '0xB48EAD'
+                        cyan: '0x88C0D0'
+                        white: '0xE5E9F0'
+                bright:
+                        black: '0x4C566A'
+                        red: '0xBF616A'
+                        green: '0xA3BE8C'
+                        yellow: '0xEBCB8B'
+                        blue: '0x81A1C1'
+                        magenta: '0xB48EAD'
+                        cyan: '0x8FBCBB'
+                        white: '0xECEFF4'
+        dracula: &dracula
+                primary:
+                        background: '0x282a36'
+                        foreground: '0xf8f8f2'
+                cursor:
+                        text: '0x44475a'
+                        cursor: '0xf8f8f2'
+                normal:
+                        black:   '0x000000'
+                        red:     '0xff5555'
+                        green:   '0x50fa7b'
+                        yellow:  '0xf1fa8c'
+                        blue:    '0xbd93f9'
+                        magenta: '0xff79c6'
+                        cyan:    '0x8be9fd'
+                        white:   '0xbfbfbf'
+
+                # Bright colors
+                bright:
+                        black:   '0x4d4d4d'
+                        red:     '0xff6e67'
+                        green:   '0x5af78e'
+                        yellow:  '0xf4f99d'
+                        blue:    '0xcaa9fa'
+                        magenta: '0xff92d0'
+                        cyan:    '0x9aedfe'
+                        white:   '0xe6e6e6'
+                dim:
+                        black:   '0x14151b'
+                        red:     '0xff2222'
+                        green:   '0x1ef956'
+                        yellow:  '0xebf85b'
+                        blue:    '0x4d5b86'
+                        magenta: '0xff46b0'
+                        cyan:    '0x59dffc'
+                        white:   '0xe6e6d1'
+colors: *dracula
+  # Visual Bell
+  #
 # Any time the BEL code is received, Alacritty "rings" the visual bell. Once
 # rung, the terminal background will be set to white and transition back to the
 # default background color. You can control the rate of this transition by

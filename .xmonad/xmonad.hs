@@ -1,11 +1,16 @@
 -- My Xmonad config
 -- Instructions to use stack for xmonad https://brianbuccola.com/how-to-install-xmonad-and-xmobar-via-stack/
+
 --- Imports ---
 
 -- Base
 import           XMonad
 import           XMonad.Hooks.DynamicLog
-import           XMonad.Hooks.ManageDocks ( docks, avoidStruts, manageDocks, ToggleStruts(..) )
+import           XMonad.Hooks.ManageDocks       ( docks
+                                                , avoidStruts
+                                                , manageDocks
+                                                , ToggleStruts(..)
+                                                )
 import qualified XMonad.StackSet               as W
 
 -- Layouts
@@ -98,7 +103,7 @@ calcPrompt c ans = inputPrompt c (trim ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
   where trim = f . f where f = reverse . dropWhile isSpace
 myXPConfig :: XPConfig
-myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=9"
+myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , bgColor             = "#2E3440"
                  , fgColor             = "#D8DEE9"
                  , bgHLight            = "#BF616A"
@@ -127,11 +132,14 @@ myScratchPads =
        (myTerminal ++ " -t htop -e htop")
        (title =? "htop")
        (customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3))
-  ,
+  , NS "spt"
+       (myTerminal ++ " -t spt -e spt")
+       (title =? "spt")
+       (customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3))
 -- run terminal, find it by title, place it in the floating window
 -- 1/6 of screen width from the left, 1/6 of screen height
 -- from the top, 2/3 of screen width by 2/3 of screen height
-    NS "terminal"
+  , NS "terminal"
     -- alacritty -t sets the window title
        (myTerminal ++ " -t scratchpad")
        (title =? "scratchpad")
@@ -160,23 +168,35 @@ myKeys =
   -- Neeeds playerctl to work.
   , ("<XF86AudioPlay>", spawn "playerctl play-pause")
   , ("<XF86AudioPrev>", spawn "playerctl prev")
-  , ("<XF86AudioNext>", spawn "playerctl next")
+  , ( "<XF86AudioNext>"
+    , spawn "playerctl next"
+    )
   -- BRIGHTNESS
   -- brigntnessctl needs to be installed to work
-  , ("<XF86MonBrightnessUp>"  , spawn "brightnessctl s +10%")
-  , ("<XF86MonBrightnessDown>", spawn "brightnessctl s 10%-")
+  , ("<XF86MonBrightnessUp>", spawn "brightnessctl s +10%")
+  , ( "<XF86MonBrightnessDown>"
+    , spawn "brightnessctl s 10%-"
+    )
   -- APPLICATIONS
- 
   , ("M-f", spawn "emacsclient -create-frame --alternate-editor=\"\" ")
-  , ("M-b"                    , spawn "brave")
-  , ("M-S-r", spawn "xmonad --recompile && xmonad --restart")
+  , ("M-b", spawn "brave")
+  , ( "M-S-r"
+    , spawn "xmonad --recompile && xmonad --restart"
+    )
   -- SCRATCHPADS -- very useful feature
   , ("M-C-<Return>", namedScratchpadAction myScratchPads "terminal")
-  , ("M-C-h"       , namedScratchpadAction myScratchPads "htop")
+  , ( "M-C-h"
+    , namedScratchpadAction myScratchPads "htop"
+    )
+  , ( "M-C-t"
+    , namedScratchpadAction myScratchPads "spt"
+    )
   -- PROMPTS
   -- Use xmonad-contrib's builtin prompt rather than dmenu
   , ("M-p", shellPrompt myXPConfig)
-  , ( "M-q" , calcPrompt myXPConfig "qalc") -- example calculator prompt. Also comes with a useful calculator!
+  , ( "M-q"
+    , calcPrompt myXPConfig "qalc"
+    ) -- example calculator prompt. Also comes with a useful calculator!
 
   --- MISC
   , ("M-s", sendMessage ToggleStruts)         -- Toggles struts
@@ -200,7 +220,7 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 
 myStartupHook :: X ()
 myStartupHook = do
-  spawnOnce "feh --bg-scale ~/Wallpapers/pikachu.jpg"
+  spawnOnce "feh --bg-scale ~/Wallpapers/dark-city.jpg"
   spawnOnce "picom &"
   spawnOnce "emacs --daemon"
 

@@ -46,6 +46,28 @@
 (use-package! all-the-icons-dired
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+;; source https://github.com/jethrokuan/dots/blob/master/.doom.d/config.el
+;; I'm not very well versed in elisp, so I'm not sure what's happening
+(defun my/open-with (arg)
+  "Open visited file in default external program.
+When in dired mode, open file under the cursor.
+With a prefix ARG always prompt for command to use."
+  (interactive "P")
+  (let* ((current-file-name
+          (if (eq major-mode 'dired-mode)
+              (dired-get-file-for-visit)
+            buffer-file-name))
+         (open (pcase system-type
+                 (`darwin "open")
+                 ((or `gnu `gnu/linux `gnu/kfreebsd) "xdg-open")))
+         (program (if (or arg (not open))
+                      (read-shell-command "Open current file with: ")
+                    open)))
+    (call-process program nil 0 nil current-file-name)))
+
+(map! "C-c o o" 'my/open-with)
+
+(setq doom-theme 'doom-nord)
 
 (setq doom-theme 'doom-nord)
 
@@ -54,6 +76,10 @@
 (setq frame-title-format "%b - Doom Emacs")
 
 (setq evil-escape-key-sequence "fd")
+
+(setq evil-escape-key-sequence "fd")
+
+(setq org-directory "~/org/")
 
 (setq org-directory "~/org/")
 
@@ -89,6 +115,9 @@
           )
         )
  )
+
+(after! org-roam
+  (setq org-id-link-to-org-use-id t))
 
 (use-package! ein
   :config
