@@ -1,9 +1,15 @@
+:PROPERTIES:
+:ID:       17d4fa37-d9e3-4190-9382-b3cc5c99b476
+:END:
 #+TITLE: My Configuration
 #+AUTHOR:  Thanawat Techaumnuaiwit
 * Introduction
  My Configuration for Doom! Feel free to copy but I probably copy pasted from
  somewhere else. :P
 ** Original Config information:
+:PROPERTIES:
+:ID:       b0390cdc-5e27-48d9-a391-ce3e28485a18
+:END:
 Keep for refrence later..
 #+BEGIN_SRC elisp
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
@@ -25,6 +31,9 @@ Keep for refrence later..
 ;; they are implemented.
 #+END_SRC
 * Personal Info
+:PROPERTIES:
+:ID:       902f6895-bf00-4d3a-9278-358e267458da
+:END:
 #+BEGIN_SRC elisp
 (setq user-full-name "Thanawat Techaumnuaiwit"
       user-mail-address "thanawat@ucsb.edu")
@@ -44,27 +53,39 @@ Keep for refrence later..
 #+END_SRC
 * Aesthetics
 ** Font
+:PROPERTIES:
+:ID:       96c6a5f0-3781-4c20-b565-acd92689db9d
+:END:
 #+BEGIN_SRC elisp
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
-;; (after! pretty-code
-;;   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+;; (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
+(after! pretty-code
+  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 (setq tab-width 2)
 #+END_SRC
 ** Line Numbers
+:PROPERTIES:
+:ID:       7a4c4e46-cee6-487d-8b9c-748e64f4cf3e
+:END:
 #+BEGIN_SRC elisp
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
 (setq display-line-numbers-type 'relative)
+;; Makes visual-lines work better
+(setq visual-fill-column-center-text t)
 #+END_SRC
 ** Start emacs Fullscreen
+:PROPERTIES:
+:ID:       d899a7f1-fefc-4486-bc7e-cd87499ded20
+:END:
 #+BEGIN_SRC elisp
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+END_SRC
 ** Dired
+:PROPERTIES:
+:ID:       1ac747c6-59e5-4c31-bc23-d373a1dede78
+:END:
 #+BEGIN_SRC elisp
-(use-package! all-the-icons-dired
-  :init
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 ;; source https://github.com/jethrokuan/dots/blob/master/.doom.d/config.el
 ;; I'm not very well versed in elisp, so I'm not sure what's happening
 (defun my/open-with (arg)
@@ -88,10 +109,16 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 
 ** Theme
+:PROPERTIES:
+:ID:       600a29d1-7774-4460-b730-767184a8be84
+:END:
 #+BEGIN_SRC elisp
 (setq doom-theme 'doom-nord)
 #+END_SRC
 ** Frame title
+:PROPERTIES:
+:ID:       3cfd49fa-a9ce-4f5b-a195-3d7b2ad5e9cd
+:END:
 #+BEGIN_SRC elisp
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -99,14 +126,25 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 * Keybindings
 ** Evil
+:PROPERTIES:
+:ID:       0389e2d4-ea40-4779-a8e3-c3f5a42b761f
+:END:
 #+BEGIN_SRC elisp
 (setq evil-escape-key-sequence "fd")
 #+END_SRC
 * org
+:PROPERTIES:
+:ID:       30342941-bd1c-4a06-8498-256d58706639
+:END:
 #+BEGIN_SRC elisp
 (setq org-directory "~/org/")
 #+END_SRC
+
+
 ** Org settings
+:PROPERTIES:
+:ID:       4a8eb29c-6916-4dc6-863e-17bdf3380388
+:END:
 #+BEGIN_SRC elisp
 (after! org
   (add-to-list 'org-capture-templates '("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n  %a"))
@@ -118,10 +156,14 @@ With a prefix ARG always prompt for command to use."
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "~/reveal.js/")
+  (add-to-list 'org-modules 'org-habit)
   )
 
 #+END_SRC
 ** mermaid
+:PROPERTIES:
+:ID:       b9201c1a-e1da-440b-9c69-f17d7c112be6
+:END:
 #+BEGIN_SRC elisp
 (use-package ob-mermaid
   :config
@@ -129,6 +171,9 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 
 ** Anki
+:PROPERTIES:
+:ID:       e1109dae-e854-428d-bd07-0b50b714962d
+:END:
 #+BEGIN_SRC elisp
 (use-package! anki-editor
   :config
@@ -149,12 +194,40 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 
 ** Org-roam
+:PROPERTIES:
+:ID:       f60f31d6-0b54-4f40-92ab-7eb199a0df69
+:END:
 #+BEGIN_SRC elisp
 (after! org-roam
   (setq org-id-link-to-org-use-id t))
+(use-package! org-roam-server
+  :ensure t
+  :config
+  (setq org-roam-server-host "127.0.0.1"
+        org-roam-server-port 8080
+        org-roam-server-export-inline-images t
+        org-roam-server-authenticate nil
+        org-roam-server-label-truncate t
+        org-roam-server-label-truncate-length 60
+        org-roam-server-label-wrap-length 20))
 #+END_SRC
 
+** Org-journal
+:PROPERTIES:
+:ID:       ef5ffd1a-8520-4149-bef6-7d60b84f2190
+:END:
+#+BEGIN_SRC elisp
+(after! org-journal
+  (setq org-journal-file-type 'weekly)
+  )
+#+END_SRC
+
+#+RESULTS:
+
 * Jupyter
+:PROPERTIES:
+:ID:       16ddc77f-0a23-4b1f-a297-820b9d032ed7
+:END:
 #+BEGIN_SRC elisp
 (use-package! ein
   :config
@@ -162,6 +235,9 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 
 * Nov.el
+:PROPERTIES:
+:ID:       154ef8a3-dd09-4c93-9298-ebf9477155a6
+:END:
 #+BEGIN_SRC elisp
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
@@ -174,20 +250,46 @@ With a prefix ARG always prompt for command to use."
 #+END_SRC
 
 * Rss(elfeed)
+:PROPERTIES:
+:ID:       98751ee2-3113-4261-87ec-6e6f3507f77c
+:END:
 #+BEGIN_SRC elisp
 (after! elfeed
-  (setq elfeed-search-filter "@1-month-ago +unread"))
+    (setq elfeed-search-filter "@1-month-ago +unread +daily")
+    (defun elfeed-v-mpv (url)
+    "Watch a video from URL in MPV"
+    (async-shell-command (format "mpv \"%s\"" url)))
+
+    (defun elfeed-view-mpv (&optional use-generic-p)
+    "Youtube-feed link"
+    (interactive "P")
+    (let ((entries (elfeed-search-selected)))
+        (cl-loop for entry in entries
+        do (elfeed-untag entry 'unread)
+        when (elfeed-entry-link entry)
+        do (elfeed-v-mpv it))
+        (mapc #'elfeed-search-update-entry entries)
+        (unless (use-region-p) (forward-line))))
+
+    (define-key elfeed-search-mode-map (kbd "M-v") 'elfeed-view-mpv)
+    )
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
 #+END_SRC
 * Code
 
 ** lsp
+:PROPERTIES:
+:ID:       30073b6f-7aa1-4b85-a1eb-1d8416dab9e2
+:END:
 #+BEGIN_SRC elisp
 (after! lsp-mode
   (setq lsp-vetur-format-options-tab-size 4))
 #+END_SRC
 
 ** c
+:PROPERTIES:
+:ID:       56b090dc-46f0-409d-be6e-852e08cac56d
+:END:
 #+BEGIN_SRC elisp
 (after! cc-mode
   (setq c-basic-offset 2)
@@ -195,11 +297,17 @@ With a prefix ARG always prompt for command to use."
 
 #+END_SRC
 ** python
+:PROPERTIES:
+:ID:       7b2462ea-5e9f-4766-98c4-dc163334fba6
+:END:
 #+BEGIN_SRC elisp
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
 #+END_SRC
 ** color
+:PROPERTIES:
+:ID:       5a5d6b7c-6e50-42c0-841f-8d17e88c88bf
+:END:
 #+BEGIN_SRC elisp
 (after! rgb
 (add-hook! 'rainbow-mode-hook

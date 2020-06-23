@@ -32,20 +32,20 @@
                       (mu4e-trash-folder      . "/Deleted Items")
                       (mu4e-update-interval   . 1800)))
 
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
-;; (after! pretty-code
-;;   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
+;; (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
+(after! pretty-code
+  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
 (setq tab-width 2)
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
 (setq display-line-numbers-type 'relative)
+;; Makes visual-lines work better
+(setq visual-fill-column-center-text t)
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(use-package! all-the-icons-dired
-  :init
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 ;; source https://github.com/jethrokuan/dots/blob/master/.doom.d/config.el
 ;; I'm not very well versed in elisp, so I'm not sure what's happening
 (defun my/open-with (arg)
@@ -69,17 +69,11 @@ With a prefix ARG always prompt for command to use."
 
 (setq doom-theme 'doom-nord)
 
-(setq doom-theme 'doom-nord)
-
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
 (setq frame-title-format "%b - Doom Emacs")
 
 (setq evil-escape-key-sequence "fd")
-
-(setq evil-escape-key-sequence "fd")
-
-(setq org-directory "~/org/")
 
 (setq org-directory "~/org/")
 
@@ -93,6 +87,7 @@ With a prefix ARG always prompt for command to use."
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "~/reveal.js/")
+  (add-to-list 'org-modules 'org-habit)
   )
 
 (use-package ob-mermaid
@@ -118,6 +113,20 @@ With a prefix ARG always prompt for command to use."
 
 (after! org-roam
   (setq org-id-link-to-org-use-id t))
+(use-package! org-roam-server
+  :ensure t
+  :config
+  (setq org-roam-server-host "127.0.0.1"
+        org-roam-server-port 8080
+        org-roam-server-export-inline-images t
+        org-roam-server-authenticate nil
+        org-roam-server-label-truncate t
+        org-roam-server-label-truncate-length 60
+        org-roam-server-label-wrap-length 20))
+
+(after! org-journal
+  (setq org-journal-file-type 'weekly)
+  )
 
 (use-package! ein
   :config
@@ -133,7 +142,24 @@ With a prefix ARG always prompt for command to use."
   )
 
 (after! elfeed
-  (setq elfeed-search-filter "@1-month-ago +unread"))
+    (setq elfeed-search-filter "@1-month-ago +unread +daily")
+    (defun elfeed-v-mpv (url)
+    "Watch a video from URL in MPV"
+    (async-shell-command (format "mpv \"%s\"" url)))
+
+    (defun elfeed-view-mpv (&optional use-generic-p)
+    "Youtube-feed link"
+    (interactive "P")
+    (let ((entries (elfeed-search-selected)))
+        (cl-loop for entry in entries
+        do (elfeed-untag entry 'unread)
+        when (elfeed-entry-link entry)
+        do (elfeed-v-mpv it))
+        (mapc #'elfeed-search-update-entry entries)
+        (unless (use-region-p) (forward-line))))
+
+    (define-key elfeed-search-mode-map (kbd "M-v") 'elfeed-view-mpv)
+    )
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
 
 (after! lsp-mode

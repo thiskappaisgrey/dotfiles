@@ -1,5 +1,5 @@
 -- My Xmonad config
--- Instructions to use stack for xmonad https://brianbuccola.com/how-to-install-xmonad-and-xmobar-via-stack/
+-- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
 
 --- Imports ---
 
@@ -43,6 +43,8 @@ import           XMonad.Prompt.Shell            ( shellPrompt )
 -- Data
 import           Data.Char                      ( isSpace )
 import           Data.List
+
+
 myTerminal :: [Char]
 myTerminal = "alacritty"
 
@@ -89,9 +91,9 @@ windowCount =
 
 myWorkspaces :: [String]
 myWorkspaces =
-  ["dev", "www", "proc", "mus", "game", "chat", "vid", "other", "other2"]
-
-
+  ["main", "www", "dev", "mus", "vid", "game", "o1", "o2", "o3", "NSP"]
+-- Treeselect stuff
+-- TODO If I can enable avy/vim-easymotion like navigation, that would be great.
 
 -- Prompts -- Also learned about from distrotube
 
@@ -99,9 +101,9 @@ myWorkspaces =
 -- You could use this as a template for other custom prompts that
 -- use command line programs that return a single line of output.
 calcPrompt :: XPConfig -> String -> X ()
-calcPrompt c ans = inputPrompt c (trim ans)
+calcPrompt c ans = inputPrompt c (trim' ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
-  where trim = f . f where f = reverse . dropWhile isSpace
+  where trim' = f . f where f = reverse . dropWhile isSpace
 myXPConfig :: XPConfig
 myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , bgColor             = "#2E3440"
@@ -141,6 +143,8 @@ myScratchPads =
 -- from the top, 2/3 of screen width by 2/3 of screen height
   , NS "terminal"
     -- alacritty -t sets the window title
+    -- use bash for my scratchpad setup b/c some scripts doesn't work on fish
+    -- can use bash with "-e /bin/bash"
        (myTerminal ++ " -t scratchpad")
        (title =? "scratchpad")
        (customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3))
@@ -166,6 +170,7 @@ myKeys =
   -- PLAY/PAUSE
   -- My thinkpad keyboard doesn't have audio keys, so I would need two keybindings
   -- Neeeds playerctl to work.
+  -- NOTE Also don't forget to install: https://github.com/hoyon/mpv-mpris in order to have mpv work with the MPRIS interface
   , ("<XF86AudioPlay>", spawn "playerctl play-pause")
   , ("<XF86AudioPrev>", spawn "playerctl prev")
   , ( "<XF86AudioNext>"
@@ -200,18 +205,21 @@ myKeys =
 
   --- MISC
   , ("M-s", sendMessage ToggleStruts)         -- Toggles struts
+  -- , ("M-t", treeselectWorkspace myTreeConf myWorkspaces W.greedyView)
+  -- , ("M-S-t", treeselectWorkspace myTreeConf myWorkspaces W.shift)
   ]
 
 
-
+-- namedScratchpadFilterOutWorkspacePP $ - if I want to filter out named scratchpads
 -- Pretty fg
 myPP :: PP
-myPP = namedScratchpadFilterOutWorkspacePP $ def
+myPP = namedScratchpadFilterOutWorkspacePP $  def
   { ppUrgent          = xmobarColor "red" "yellow"
   , ppCurrent         = xmobarColor "#4C566A" "#A3BE8C" . wrap "| " " |" -- Current workspace in xmobar
   , ppVisible         = xmobarColor "#A3BE8C" ""                -- Visible but not current workspace
   , ppHidden          = xmobarColor "#81A1C1" "" . wrap " " " "   -- Hidden workspaces in xmobar
-  , ppHiddenNoWindows = xmobarColor "#BF616A" ""        -- Hidden workspaces (no windows)
+  -- \( _ ) -> "" to show no hidden windows
+  , ppHiddenNoWindows =  xmobarColor "#BF616A" ""       -- Hidden workspaces (no windows)
   , ppTitle           = xmobarColor "#D8DEE9" "" . shorten 60     -- Title of active window in xmobar
   , ppSep             = "<fc=#D8DEE9> | </fc>"                     -- Separators in xmobar
   , ppExtras          = [windowCount]                           -- # of windows current workspace
@@ -233,11 +241,12 @@ main = do
   xmonad
     $                 docks def
                         { manageHook         = myManageHook <+> manageDocks
-                        , logHook = dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }
+                        , logHook =  dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }
                         , startupHook        = myStartupHook
                         , terminal           = myTerminal
                         , modMask            = mod4Mask
                         , borderWidth        = 3
+                        -- do `toWorkspaces myWorkspaces` for treeselect
                         , workspaces         = myWorkspaces
                         , handleEventHook    = fullscreenEventHook
                         , layoutHook         = avoidStruts $ myLayout
