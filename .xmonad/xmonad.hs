@@ -27,14 +27,14 @@ import           XMonad.Util.Run                ( spawnPipe
 import           XMonad.Util.SpawnOnce
 import           System.IO
 import           XMonad.Util.EZConfig           ( additionalKeysP )
-import           XMonad.Hooks.EwmhDesktops
+import           XMonad.Hooks.EwmhDesktops      (fullscreenEventHook, ewmh)
 import           XMonad.Util.NamedScratchpad
 
 -- Prompts
 import           XMonad.Prompt
 import           XMonad.Prompt.Input
 -- import           XMonad.Prompt.Man
--- import           XMonad.Prompt.Pass
+import           XMonad.Prompt.Pass
 import           XMonad.Prompt.Shell            ( shellPrompt )
 -- import           XMonad.Prompt.Ssh
 -- import           XMonad.Prompt.XMonad
@@ -101,7 +101,7 @@ myWorkspaces =
 -- You could use this as a template for other custom prompts that
 -- use command line programs that return a single line of output.
 calcPrompt :: XPConfig -> String -> X ()
-calcPrompt c ans = inputPrompt c (trim' ans)
+calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
   where trim' = f . f where f = reverse . dropWhile isSpace
 myXPConfig :: XPConfig
@@ -190,9 +190,7 @@ myKeys =
     )
   -- SCRATCHPADS -- very useful feature
   , ("M-C-<Return>", namedScratchpadAction myScratchPads "terminal")
-  , ( "M-C-h"
-    , namedScratchpadAction myScratchPads "htop"
-    )
+  , ("M-C-h"       , namedScratchpadAction myScratchPads "htop")
   , ( "M-C-t"
     , namedScratchpadAction myScratchPads "spt"
     )
@@ -204,22 +202,28 @@ myKeys =
     ) -- example calculator prompt. Also comes with a useful calculator!
 
   --- MISC
-  , ("M-s", sendMessage ToggleStruts)         -- Toggles struts
+  , ( "M-s"
+    , sendMessage ToggleStruts
+    )         -- Toggles struts
   -- , ("M-t", treeselectWorkspace myTreeConf myWorkspaces W.greedyView)
   -- , ("M-S-t", treeselectWorkspace myTreeConf myWorkspaces W.shift)
+  , ("M-w"    , passPrompt myXPConfig)
+  , ("M-S-w"  , passGeneratePrompt myXPConfig)
+  , ("M-C-w"  , passEditPrompt myXPConfig)
+  , ("M-C-S-w", passRemovePrompt myXPConfig)
   ]
 
 
 -- namedScratchpadFilterOutWorkspacePP $ - if I want to filter out named scratchpads
 -- Pretty fg
 myPP :: PP
-myPP = namedScratchpadFilterOutWorkspacePP $  def
+myPP = namedScratchpadFilterOutWorkspacePP $ def
   { ppUrgent          = xmobarColor "red" "yellow"
   , ppCurrent         = xmobarColor "#4C566A" "#A3BE8C" . wrap "| " " |" -- Current workspace in xmobar
   , ppVisible         = xmobarColor "#A3BE8C" ""                -- Visible but not current workspace
   , ppHidden          = xmobarColor "#81A1C1" "" . wrap " " " "   -- Hidden workspaces in xmobar
   -- \( _ ) -> "" to show no hidden windows
-  , ppHiddenNoWindows =  xmobarColor "#BF616A" ""       -- Hidden workspaces (no windows)
+  , ppHiddenNoWindows = xmobarColor "#BF616A" ""       -- Hidden workspaces (no windows)
   , ppTitle           = xmobarColor "#D8DEE9" "" . shorten 60     -- Title of active window in xmobar
   , ppSep             = "<fc=#D8DEE9> | </fc>"                     -- Separators in xmobar
   , ppExtras          = [windowCount]                           -- # of windows current workspace
@@ -229,7 +233,8 @@ myPP = namedScratchpadFilterOutWorkspacePP $  def
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "feh --bg-scale ~/Wallpapers/dark-city.jpg"
-  spawnOnce "picom &"
+  -- compositor, but I don't really need it
+--  spawnOnce "picom &"
   spawnOnce "emacs --daemon"
 
 myManageHook :: ManageHook
@@ -238,17 +243,16 @@ myManageHook = namedScratchpadManageHook myScratchPads <+> manageHook def
 main :: IO ()
 main = do
   xmproc <- spawnPipe "xmobar ~/.xmonad/xmobars/xmobar-nord"
-  xmonad
-    $                 docks def
+  xmonad $ ewmh $ docks def
                         { manageHook         = myManageHook <+> manageDocks
-                        , logHook =  dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }
+                        , logHook = dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }
                         , startupHook        = myStartupHook
                         , terminal           = myTerminal
                         , modMask            = mod4Mask
                         , borderWidth        = 3
                         -- do `toWorkspaces myWorkspaces` for treeselect
                         , workspaces         = myWorkspaces
-                        , handleEventHook    = fullscreenEventHook
+                        , handleEventHook    = handleEventHook def <+> fullscreenEventHook
                         , layoutHook         = avoidStruts $ myLayout
                         , focusedBorderColor = "#434C5E"
                         }
