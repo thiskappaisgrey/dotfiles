@@ -22,7 +22,12 @@
        company           ; the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
-       ivy               ; a search engine for love and life
+       (ivy
+        +fuzzy
+        +prescient
+        +childframe     ; so I don't have to look down
+        +icons          ; icons!
+        )               ; a search engine for love and life
 
        :ui
        ;;deft              ; notational velocity for Emacs
@@ -75,9 +80,9 @@
        vc                ; version-control and Emacs, sitting in a tree
 
        :term
-       ;;eshell            ; a consistent, cross-platform shell (WIP)
+       eshell            ; a consistent, cross-platform shell (WIP)
        ;;shell             ; a terminal REPL for Emacs
-       term              ; terminals in Emacs
+       ;;term              ; terminals in Emacs
        ;;vterm             ; another terminals in Emacs
 
        :checkers
@@ -172,7 +177,7 @@
        yaml
 
        :email
-       ;;(mu4e +gmail)
+       (mu4e +gmail)
        ;;notmuch
        ;;(wanderlust +gmail)
 

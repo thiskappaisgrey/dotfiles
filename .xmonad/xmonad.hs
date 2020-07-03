@@ -1,4 +1,9 @@
 -- My Xmonad config
+
+-- Tried using stack for a little bit but it wasn't a great experience
+-- Took up too much space, didn't play well with dante(cus all the hidden packages stuff) and I didn't really understand it
+-- The arch install works, so that's what I'll stick with for now. If it breaks somehow later, I'll look into cabal instead
+-- TODO Dante + ghcid = good setup maybe? Also look into hlint too, so I can write better haskell code.
 -- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
 
 --- Imports ---
@@ -88,6 +93,7 @@ windowCount =
     . W.workspace
     . W.current
     . windowset
+-- DynamicProjects(workspace on demand!)
 
 myWorkspaces :: [String]
 myWorkspaces =
@@ -224,7 +230,7 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
   , ppHidden          = xmobarColor "#81A1C1" "" . wrap " " " "   -- Hidden workspaces in xmobar
   -- \( _ ) -> "" to show no hidden windows
   , ppHiddenNoWindows = xmobarColor "#BF616A" ""       -- Hidden workspaces (no windows)
-  , ppTitle           = xmobarColor "#D8DEE9" "" . shorten 60     -- Title of active window in xmobar
+  , ppTitle           = \_ -> ""     -- Title of active window in xmobar
   , ppSep             = "<fc=#D8DEE9> | </fc>"                     -- Separators in xmobar
   , ppExtras          = [windowCount]                           -- # of windows current workspace
   , ppOrder           = \(ws : l : t : ex) -> [ws, l] ++ ex ++ [t]
@@ -237,12 +243,13 @@ myStartupHook = do
 --  spawnOnce "picom &"
   spawnOnce "emacs --daemon"
 
+-- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
 myManageHook :: ManageHook
 myManageHook = namedScratchpadManageHook myScratchPads <+> manageHook def
 
 main :: IO ()
 main = do
-  xmproc <- spawnPipe "xmobar ~/.xmonad/xmobars/xmobar-nord"
+  xmproc <- spawnPipe "xmobar ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad $ ewmh $ docks def
                         { manageHook         = myManageHook <+> manageDocks
                         , logHook = dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }

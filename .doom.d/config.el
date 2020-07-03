@@ -16,21 +16,28 @@
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 
-(setq user-full-name "Thanawat Techaumnuaiwit"
-      user-mail-address "thanawat@ucsb.edu")
-(set-email-account! "umail"
+(setq user-full-name "Thanawat Techaumnuaiwit")
+(after! mu4e
+  (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a"))
+(set-email-account! "ucsb"
                     '((user-mail-address      . "thanawat@ucsb.edu")
                       (smtpmail-smtp-user     . "thanawat@ucsb.edu")
-                      (user-full-name         . "Thanawat Techaumnuaiwit")
-                      (smtpmail-smtp-server   . "smtp.gmail.com")
-                      (smtpmail-smtp-service  . 587)
-                      (smtpmail-stream-type   . starttls)
-                      (smtpmail-debug-info    . t)
-                      (mu4e-drafts-folder     . "/Drafts")
-                      (mu4e-refile-folder     . "/Archive")
-                      (mu4e-sent-folder       . "/Sent Items")
-                      (mu4e-trash-folder      . "/Deleted Items")
-                      (mu4e-update-interval   . 1800)))
+                      (mu4e-drafts-folder     . "/ucsb/[acc1].Drafts")
+                      (mu4e-refile-folder     . "/ucsb/[acc1].Archive")
+                      (mu4e-sent-folder       . "/ucsb/[acc1].Sent Mail")
+                      (mu4e-trash-folder      . "/ucsb/[acc1].Trash")
+                      (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
+                    t)
+
+(set-email-account! "personal-gmail"
+  '((mu4e-sent-folder       . "/personal-gmail/[acc2].Sent Mail")
+    (mu4e-drafts-folder     . "/personal-gmail/[acc2].Drafts")
+    (mu4e-trash-folder      . "/personal-gmail/[acc2].Trash")
+    (mu4e-refile-folder     . "/personal-gmail/[acc2].Archive")
+    (smtpmail-smtp-user     . "thanatechaumnuaiwit@gmail.com")
+    (user-mail-address      . "thanatechaumnuaiwit@gmail.com")    ;; only needed for mu < 1.4
+    (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
+  nil)
 
 ;; (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
@@ -111,8 +118,6 @@ With a prefix ARG always prompt for command to use."
         )
  )
 
-(after! org-roam
-  (setq org-id-link-to-org-use-id t))
 (use-package! org-roam-server
   :ensure t
   :config
@@ -127,6 +132,31 @@ With a prefix ARG always prompt for command to use."
 (after! org-journal
   (setq org-journal-file-type 'weekly)
   )
+
+(after! org
+  (require 'appt)
+  (require 'notifications)
+  (setq appt-time-msg-list nil)    ;; clear existing appt list
+  (setq appt-display-interval '5)  ;; warn every 5 minutes from t - appt-message-warning-time
+  (setq
+    appt-message-warning-time '15  ;; send first warning 15 minutes before appointment
+    appt-display-mode-line nil     ;; don't show in the modeline
+    appt-display-format 'window)   ;; pass warnings to the designated window function
+  (setq appt-disp-window-function (function ct/appt-display-native))
+
+  (appt-activate 1)                ;; activate appointment notification
+  ; (display-time) ;; Clock in modeline
+  (defun ct/appt-display-native (min-to-app new-time msg)
+    (notifications-notify
+           :title (format "Event in %s minutes" min-to-app) ; Title
+           :body (format "%s" msg)
+           :urgency 'normal
+           ))
+  ;; Agenda-to-appointent hooks
+  (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
+  (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
+  (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+)
 
 (use-package! ein
   :config
