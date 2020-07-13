@@ -26,6 +26,10 @@
                       (mu4e-refile-folder     . "/ucsb/[acc1].Archive")
                       (mu4e-sent-folder       . "/ucsb/[acc1].Sent Mail")
                       (mu4e-trash-folder      . "/ucsb/[acc1].Trash")
+                      (smtpmail-starttls-credentials . (("smtp.gmail.com" 587 nil nil)))
+                      (smtpmail-default-smtp-server . "smtp.gmail.com")
+                      (smtpmail-smtp-server . "smtp.gmail.com")
+                      (smtpmail-smtp-service . 587)
                       (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
                     t)
 
@@ -34,6 +38,7 @@
     (mu4e-drafts-folder     . "/personal-gmail/[acc2].Drafts")
     (mu4e-trash-folder      . "/personal-gmail/[acc2].Trash")
     (mu4e-refile-folder     . "/personal-gmail/[acc2].Archive")
+    (smtpmail-starttls-credentials . (("smtp.gmail.com" 587 nil nil)))
     (smtpmail-smtp-user     . "thanatechaumnuaiwit@gmail.com")
     (user-mail-address      . "thanatechaumnuaiwit@gmail.com")    ;; only needed for mu < 1.4
     (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
@@ -81,6 +86,8 @@ With a prefix ARG always prompt for command to use."
 (setq frame-title-format "%b - Doom Emacs")
 
 (setq evil-escape-key-sequence "fd")
+(map! :leader
+      :desc "rss" "o s" #'=rss)
 
 (setq org-directory "~/org/")
 
@@ -93,13 +100,9 @@ With a prefix ARG always prompt for command to use."
       org-latex-pdf-process
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-  (setq org-re-reveal-root "~/reveal.js/")
+  (setq org-re-reveal-root "/home/thanawat/reveal.js/")
   (add-to-list 'org-modules 'org-habit)
   )
-
-(use-package ob-mermaid
-  :config
-  (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
 
 (use-package! anki-editor
   :config
@@ -118,20 +121,25 @@ With a prefix ARG always prompt for command to use."
         )
  )
 
-(use-package! org-roam-server
-  :ensure t
-  :config
-  (setq org-roam-server-host "127.0.0.1"
-        org-roam-server-port 8080
-        org-roam-server-export-inline-images t
-        org-roam-server-authenticate nil
-        org-roam-server-label-truncate t
-        org-roam-server-label-truncate-length 60
-        org-roam-server-label-wrap-length 20))
+;; (use-package! org-roam-server
+;;   :ensure t
+;;   :config
+;;   (setq org-roam-server-host "127.0.0.1"
+;;         org-roam-server-port 8080
+;;         org-roam-server-export-inline-images t
+;;         org-roam-server-authenticate nil
+;;         org-roam-server-label-truncate t
+;;         org-roam-server-label-truncate-length 60
+;;         org-roam-server-label-wrap-length 20))
 
-(after! org-journal
+(use-package org-journal
+  :config
   (setq org-journal-file-type 'weekly)
+  (setq org-journal-file-format "%Y-%m-%d.org")
+  (setq org-journal-enable-agenda-integration t)
   )
+(map! :leader
+      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
 
 (after! org
   (require 'appt)
@@ -154,13 +162,9 @@ With a prefix ARG always prompt for command to use."
            ))
   ;; Agenda-to-appointent hooks
   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
-  (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
+  ;;(run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
-
-(use-package! ein
-  :config
-  (setq ein:output-area-inlined-images t))
 
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
@@ -202,7 +206,8 @@ With a prefix ARG always prompt for command to use."
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
 
-(after! rgb
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
-)
+
+(after! dante
+  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))

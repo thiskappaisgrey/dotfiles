@@ -11,10 +11,8 @@
 ;;
 ;; Here are a couple examples:
 (package! anki-editor)
-(package! ob-mermaid)
-(package! ein)
 (package! nov)
-(package! org-roam-server)
+;;(package! org-roam-server)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)

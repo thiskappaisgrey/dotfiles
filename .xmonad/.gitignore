@@ -6,12 +6,10 @@
 # compiled xmonad executable
 xmonad-*
 
-# files used by stack
-.stack-work/
-
-# directory created by `build` script
-bin/
-
+# files created by cabal
+dist/
+dist-newstyle/
+cabal.project.local*
 # files automatically created by xmonad
 xmonad.state
 # prompt-history

@@ -2,8 +2,7 @@
 clight &
 xmodmap ~/.Xmodmap
 dunst &
-# In case setxkbmap is not persistent I can just do it everytime I log in.
-setxkbmap us,th
-setxkbmap -option "grp:ctrls_toggle"
-setxkbmap -option "ctrl:nocaps"
-exec /usr/bin/xmonad
+# Script for setting up my keyboard(for thai keyboard and caps to control)
+~/.local/bin/keyboard
+~/.fehbg &
+exec $HOME/.cabal/bin/xmonad

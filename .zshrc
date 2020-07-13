@@ -125,3 +125,4 @@ alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 alias valserver="valgrind --vgdb=yes --vgdb-error=0"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+if [ -e /home/thanawat/.nix-profile/etc/profile.d/nix.sh ]; then . /home/thanawat/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
