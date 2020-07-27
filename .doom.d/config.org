@@ -104,6 +104,14 @@ With a prefix ARG always prompt for command to use."
 
 ** Theme
 #+BEGIN_SRC elisp
+(use-package ewal
+  :init (setq ewal-use-built-in-always-p nil
+              ewal-use-built-in-on-failure-p t
+              ewal-built-in-palette "sexy-material"))
+;; (use-package ewal-doom-themes
+;;   :config (progn
+;;             (load-theme 'ewal-doom-vibrant t)
+;;             (enable-theme 'ewal-doom-vibrant)))
 (setq doom-theme 'doom-nord)
 #+END_SRC
 ** Frame title
@@ -112,11 +120,22 @@ With a prefix ARG always prompt for command to use."
 ;; https://www.emacswiki.org/emacs/FrameTitle
 (setq frame-title-format "%b - Doom Emacs")
 #+END_SRC
+** Pop-up rules
+#+begin_src emacs-lisp
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+#+end_src
 * Evil
 #+BEGIN_SRC elisp
 (setq evil-escape-key-sequence "fd")
 (map! :leader
       :desc "rss" "o s" #'=rss)
+;; Make evil-mode up/down operate in screen lines instead of logical lines
+(define-key evil-motion-state-map "j" 'evil-next-visual-line)
+(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+  ;; Also in visual mode
+(define-key evil-visual-state-map "j" 'evil-next-visual-line)
+(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 #+END_SRC
 * org
 #+BEGIN_SRC elisp
@@ -127,7 +146,9 @@ With a prefix ARG always prompt for command to use."
 ** Org settings
 #+BEGIN_SRC elisp
 (after! org
-  (add-to-list 'org-capture-templates '("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n  %a"))
+  ;; TODO refactor!
+  (setq org-capture-templates (append org-capture-templates
+    '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n") ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n"))))
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines))
   (setq org-latex-listings 'minted
@@ -159,7 +180,16 @@ With a prefix ARG always prompt for command to use."
         )
  )
 #+END_SRC
-
+** Mermaid
+#+BEGIN_SRC elisp
+;; (use-package! ob-mermaid
+;;   :config
+;;   (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
+(use-package! mermaid-mode
+  :mode "\\.mmd\\'"
+  :config
+  (setq mermaid-mmdc-location "~/custom_packages/node_modules/.bin/mmdc"))
+#+END_SRC
 ** Org-roam
 #+BEGIN_SRC elisp
 ;; (use-package! org-roam-server
@@ -251,8 +281,8 @@ With a prefix ARG always prompt for command to use."
 * Code
 ** lsp
 #+BEGIN_SRC elisp
-(after! lsp-mode
-  (setq lsp-vetur-format-options-tab-size 4))
+(after! lsp-ui
+  (setq lsp-ui-sideline-show-hover t))
 #+END_SRC
 
 ** c

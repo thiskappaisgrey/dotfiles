@@ -4,7 +4,6 @@
 -- Tried using stack for a little bit but it wasn't a great experience
 -- Took up too much space, didn't play well with dante(cus all the hidden packages stuff) and I didn't really understand it
 -- Use the cabal+ghcup to install instead. Works great! Maybe also try to make my install a cabal project so I can use custom libraries?
--- TODO Dante + ghcid = good setup maybe? Also look into hlint too, so I can write better haskell code.
 -- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
 
 --- Imports ---
@@ -20,14 +19,16 @@ import           XMonad.Hooks.ManageDocks       ( docks
 import qualified XMonad.StackSet               as W
 
 -- Layouts
-import           XMonad.Layout.LayoutModifier
-import           XMonad.Layout.Spacing
-import           XMonad.Layout.ResizableTile
+-- import           XMonad.Layout.LayoutModifier
+-- import           XMonad.Layout.Spacing
+--import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.Renamed          ( renamed
                                                 , Rename(Replace)
                                                 )
+-- Might want to copy Altecration's tabbed layout(combining a web-page with a terminal, useful for web-dev)
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.Magnifier
+
 -- Utils
 import           XMonad.Util.Run                ( spawnPipe
                                                 , runProcessWithInput
@@ -66,10 +67,11 @@ import           XMonad.Actions.CycleWS
 import           XMonad.Actions.WithAll         ( killAll )
 import           System.Exit
 
-
-myTerminal :: [Char]
+-- Default apps
 myTerminal = "alacritty"
-
+myBrowser = "brave"
+-- This will start the emacs server if not already started
+myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 
 -- Copy-pasted from Mr. Distrotube! Thank you! https://gitlab.com/dwt1/dotfiles/-/blob/master/.xmonad/xmonad.hs
 -- mySpacing
@@ -77,31 +79,32 @@ myTerminal = "alacritty"
 -- mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
 -- Below is a variation of the above except no borders are applied
 -- if fewer than two windows. So a single window has no gaps.
-mySpacing
-  :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
-mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
+-- For spaces between windows. Not used for now!
+-- mySpacing
+--   :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
+-- mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 
 -----------------------------------------------------------------
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = avoidStruts (tiled ||| magnified ||| full)
+myLayout = avoidStruts (magnified ||| full)
  where
-     -- default tiling algorithm partitions the screen into two panes
-  tiled = renamed [Replace "tall"] $ smartBorders $ mySpacing 6 $ ResizableTall
-    nmaster
-    delta
-    ratio
-    []
-   where
-        -- The default number of windows in the master pane
-    nmaster = 1
+  --    -- default tiling algorithm partitions the screen into two panes
+  -- tiled = renamed [Replace "tall"] $ smartBorders $ mySpacing 6 $ ResizableTall
+  --   nmaster
+  --   delta
+  --   ratio
+  --   []
+  --  where
+  --       -- The default number of windows in the master pane
+  --   nmaster = 1
 
-    -- Default proportion of screen occupied by master pane
-    ratio   = 1 / 2
+  --   -- Default proportion of screen occupied by master pane
+  --   ratio   = 1 / 2
 
     -- Percent of screen to increment by when resizing panes
-    delta   = 3 / 100
+  --   delta   = 3 / 100
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
   magnified =
@@ -118,17 +121,17 @@ myLayout = avoidStruts (tiled ||| magnified ||| full)
     ratio   = 60 / 100
 
 -- Number of windows in a workspace, not really needed though
--- windowCount :: X (Maybe String)
--- windowCount =
---   gets
---     $ Just
---     . show
---     . length
---     . W.integrate'
---     . W.stack
---     . W.workspace
---     . W.current
---     . windowset
+windowCount :: X (Maybe String)
+windowCount =
+  gets
+    $ Just
+    . show
+    . length
+    . W.integrate'
+    . W.stack
+    . W.workspace
+    . W.current
+    . windowset
 
 -----------------------------------------------------------------
 --                          Workspaces                         --
@@ -137,23 +140,22 @@ wsMain = "main"
 wsTerm = "term"
 wsMedia = "media"
 wsGame = "game"
-myWorkspaces = [wsMain, wsTerm, wsMedia, wsGame]
+wsVidEdit = "vid-edit"
+wsVirt = "virt"
+myWorkspaces = [wsMain, wsTerm, wsMedia, wsGame, wsVidEdit, wsVirt]
 
 myProjects :: [Project]
 myProjects =
-  [ Project
-    { projectName      = wsMain
-    , projectDirectory = "~/"
-    , projectStartHook = Just $ do
-      spawnOn wsMain "emacsclient -create-frame --alternate-editor=\"\" "
-      spawnOn wsMain "brave"
-    }
+  [ Project { projectName      = wsMain
+            , projectDirectory = "~/"
+            , projectStartHook = Nothing
+            }
   , Project
     { projectName      = wsTerm
     , projectDirectory = "~/code"
     , projectStartHook = Just $ do
                            spawnOn wsTerm myTerminal
-                           spawnOn wsTerm myTerminal
+                           runInTerm "-t bashtop" "bashtop"
     }
   , Project
     { projectName      = wsMedia
@@ -167,6 +169,18 @@ myProjects =
     , projectStartHook = Just $ do
                            spawnOn wsGame "steam"
     }
+  , Project
+    { projectName      = wsVidEdit
+    , projectDirectory = "~/Videos"
+    , projectStartHook = Just $ do
+                           spawnOn wsVidEdit "shotcut"
+    }
+  , Project
+    { projectName      = wsVirt
+    , projectDirectory = "~/"
+    , projectStartHook = Just $ do
+                           spawnOn wsVirt "virtualbox"
+    }
   ]
 
 
@@ -177,6 +191,7 @@ calcPrompt :: XPConfig -> String -> X ()
 calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
   where trim' = f . f where f = reverse . dropWhile isSpace
+ 
 myXPConfig :: XPConfig
 myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , bgColor             = "#2E3440"
@@ -231,9 +246,9 @@ myKeys conf =
     zipM m nm ks as f = zipWith (\k d -> (m ++ k, addName nm $ f d)) ks as
     zipM' m nm ks as f b = zipWith (\k d -> (m ++ k, addName nm $ f d b)) ks as
     nextNonEmptyWS = findWorkspace getSortByIndexNoSP Next HiddenNonEmptyWS 1
-      >>= \t -> (windows . W.view $ t)
+      >>= \t -> windows . W.view $ t
     prevNonEmptyWS = findWorkspace getSortByIndexNoSP Prev HiddenNonEmptyWS 1
-      >>= \t -> (windows . W.view $ t)
+      >>= \t -> windows . W.view $ t
     getSortByIndexNoSP =
       fmap (. namedScratchpadFilterOutWorkspace) getSortByIndex
   in
@@ -280,18 +295,15 @@ myKeys conf =
         )
       , ( "M-S-q"
         , addName "Exit XMonad" $ confirmPrompt myXPConfig "Quit XMonad" $ io
-          (exitWith ExitSuccess)
+          exitSuccess
         )
   -- Screenshots
       , ("C-<Print>", addName "Screenshot" $ spawn "scrot")
       ]
     ^++^ subKeys
            "Launchers"
-           [ ( "M-f"
-             , addName "Launch Emacs"
-               $ spawn "emacsclient -create-frame --alternate-editor=\"\" "
-             )
-           , ("M-b"       , addName "Launch Brave" $ spawn "brave")
+           [ ("M-f"       , addName "Launch Emacs" $ spawn myEditor)
+           , ("M-b"       , addName "Launch Brave" $ spawn myBrowser)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
            , ("M-<Space>" , addName "Shell/App Prompt" $ shellPrompt myXPConfig)
            , ("M-s s"     , addName "Cancel submap" $ return ())
@@ -322,22 +334,22 @@ myKeys conf =
            ]
     ^++^ subKeys
            "Windows"
-           (  [ ("M-S-c", addName "Kill" kill)
-              , ( "M-C-c"
-                , addName "Kill all"
-                $ confirmPrompt myXPConfig "kill all"
-                $ killAll
-                )
-              , ( "M-["
-                , addName "Shrink Master Area" $ sendMessage Shrink
-                ) -- %! Shrink the master area
-              , ( "M-]"
-                , addName "Expand Master Area" $ sendMessage Expand
-                ) -- %! Expand the master area
+           ([ ("M-S-c", addName "Kill" kill)
+            , ( "M-C-c"
+              , addName "Kill all" $ confirmPrompt myXPConfig "kill all" killAll
+              )
+            , ( "M-["
+              , addName "Shrink Master Area" $ sendMessage Shrink
+              ) -- %! Shrink the master area
+            , ( "M-]"
+              , addName "Expand Master Area" $ sendMessage Expand
+              ) -- %! Expand the master area
               -- Useful for the Full layout
-              , ("M-S-j", addName "Next Window" $ windows W.focusUp)
-              , ("M-S-k", addName "Prev Window" $ windows W.focusDown)
-              ]
+            , ("M-S-j", addName "Next Window" $ windows W.focusUp)
+            , ("M-S-k", addName "Prev Window" $ windows W.focusDown)
+            , ("M-m", addName "Focus Master Window" $ windows W.focusMaster)
+            , ("M-S-m", addName "Swap Master Window" $ windows W.swapMaster)
+            ]
            ++ zipM' "M-"   "Navigate window" dirKeys   dirs windowGo   True
     -- ++ zipM' "M-S-"               "Move window"                               dirKeys dirs windowSwap True
            ++ zipM' "M-C-" "Move window"     dirKeys   dirs windowSwap True
@@ -363,13 +375,13 @@ myKeys conf =
     ^++^ subKeys
            "Workspaces"
            (  [ ( "M-;"
-                , addName "Switch to Project" $ switchProjectPrompt myXPConfig
+                , addName "Switch to Project" $ switchProjectPrompt (myXPConfig { autoComplete = Nothing })
                 )
               , ( "M-S-;"
                 , addName "Shift to Project" $ shiftToProjectPrompt myXPConfig
                 )
-              , ("M-'"  , addName "Next non-empty WS" $ nextNonEmptyWS)
-              , ("M-S-'", addName "Prev non-empty WS" $ prevNonEmptyWS)
+              , ("M-'"  , addName "Next non-empty WS" nextNonEmptyWS)
+              , ("M-S-'", addName "Prev non-empty WS" prevNonEmptyWS)
               ]
            ++ zipM "M-"
                    "View      ws"
@@ -393,7 +405,7 @@ myKeys conf =
   -- PASS - the UNIX password manager
            , ("M-p", addName "Get a Password" $ passPrompt myXPConfig)
            , ( "M-S-p"
-             , addName "Generate a Password" $ passGeneratePrompt myXPConfig
+             , addName "Generate a Password" $ passGeneratePrompt (myXPConfig { autoComplete = Nothing })
              )
            , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
            , ( "M-C-S-p"
@@ -417,7 +429,7 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
   , ppHiddenNoWindows = xmobarColor "#BF616A" ""       -- Hidden workspaces (no windows)
   , ppTitle           = const ""     -- Title of active window in xmobar
   , ppSep             = "<fc=#D8DEE9> | </fc>"                     -- Separators in xmobar
-  , ppExtras          = []
+  , ppExtras          = [windowCount] -- show number of windows
   , ppOrder           = \(ws : l : t : ex) -> [ws, l] ++ ex ++ [t]
   }
 

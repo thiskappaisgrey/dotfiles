@@ -13,6 +13,10 @@
 (package! anki-editor)
 (package! nov)
 ;;(package! org-roam-server)
+(package! ewal)
+(package! ewal-doom-themes)
+;; (package! ob-mermaid)
+(package! mermaid-mode)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)

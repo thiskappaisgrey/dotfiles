@@ -79,6 +79,14 @@ With a prefix ARG always prompt for command to use."
 
 (map! "C-c o o" 'my/open-with)
 
+(use-package ewal
+  :init (setq ewal-use-built-in-always-p nil
+              ewal-use-built-in-on-failure-p t
+              ewal-built-in-palette "sexy-material"))
+;; (use-package ewal-doom-themes
+;;   :config (progn
+;;             (load-theme 'ewal-doom-vibrant t)
+;;             (enable-theme 'ewal-doom-vibrant)))
 (setq doom-theme 'doom-nord)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
@@ -88,11 +96,19 @@ With a prefix ARG always prompt for command to use."
 (setq evil-escape-key-sequence "fd")
 (map! :leader
       :desc "rss" "o s" #'=rss)
+;; Make evil-mode up/down operate in screen lines instead of logical lines
+(define-key evil-motion-state-map "j" 'evil-next-visual-line)
+(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+  ;; Also in visual mode
+(define-key evil-visual-state-map "j" 'evil-next-visual-line)
+(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
 (setq org-directory "~/org/")
 
 (after! org
-  (add-to-list 'org-capture-templates '("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n  %a"))
+  ;; TODO refactor!
+  (setq org-capture-templates (append org-capture-templates
+    '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n") ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n"))))
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines))
   (setq org-latex-listings 'minted
@@ -120,6 +136,14 @@ With a prefix ARG always prompt for command to use."
           )
         )
  )
+
+;; (use-package! ob-mermaid
+;;   :config
+;;   (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
+(use-package! mermaid-mode
+  :mode "\\.mmd\\'"
+  :config
+  (setq mermaid-mmdc-location "~/custom_packages/node_modules/.bin/mmdc"))
 
 ;; (use-package! org-roam-server
 ;;   :ensure t
@@ -196,8 +220,8 @@ With a prefix ARG always prompt for command to use."
     )
 (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
 
-(after! lsp-mode
-  (setq lsp-vetur-format-options-tab-size 4))
+(after! lsp-ui
+  (setq lsp-ui-sideline-show-hover t))
 
 (after! cc-mode
   (setq c-basic-offset 2)
@@ -208,6 +232,9 @@ With a prefix ARG always prompt for command to use."
 
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
+
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
 
 (after! dante
   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
