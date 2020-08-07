@@ -1,0 +1,2 @@
+#!/bin/bash
+pacwall -D -b \#2E3440 -s \#EBCB8B66 -e \#BF616A -d \#81A1C1 -u \#8FBCBB
