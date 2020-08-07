@@ -1,3 +1,9 @@
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(after! dante
+  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Here are some additional functions/macros that could help you configure Doom:
@@ -97,11 +103,11 @@ With a prefix ARG always prompt for command to use."
 (map! :leader
       :desc "rss" "o s" #'=rss)
 ;; Make evil-mode up/down operate in screen lines instead of logical lines
-(define-key evil-motion-state-map "j" 'evil-next-visual-line)
-(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-motion-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
   ;; Also in visual mode
-(define-key evil-visual-state-map "j" 'evil-next-visual-line)
-(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
 (setq org-directory "~/org/")
 
@@ -109,13 +115,13 @@ With a prefix ARG always prompt for command to use."
   ;; TODO refactor!
   (setq org-capture-templates (append org-capture-templates
     '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n") ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n"))))
-  (require 'ox-extra)
-  (ox-extras-activate '(ignore-headlines))
-  (setq org-latex-listings 'minted
-      org-latex-packages-alist '(("" "minted"))
-      org-latex-pdf-process
-      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  ;; (require 'ox-extra)
+  ;; (ox-extras-activate '(ignore-headlines))
+  ;; (setq org-latex-listings 'minted
+  ;;     org-latex-packages-alist '(("" "minted"))
+  ;;     org-latex-pdf-process
+  ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+  ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "/home/thanawat/reveal.js/")
   (add-to-list 'org-modules 'org-habit)
   )
@@ -186,7 +192,6 @@ With a prefix ARG always prompt for command to use."
            ))
   ;; Agenda-to-appointent hooks
   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
-  ;;(run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
 
@@ -199,7 +204,8 @@ With a prefix ARG always prompt for command to use."
   (add-hook 'nov-mode-hook 'visual-line-mode)
   )
 
-(after! elfeed
+(use-package! elfeed
+  :config
     (setq elfeed-search-filter "@1-month-ago +unread +daily")
     (defun elfeed-v-mpv (url)
     "Watch a video from URL in MPV"
@@ -227,14 +233,12 @@ With a prefix ARG always prompt for command to use."
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
+(setq python-shell-interpreter "python3"
+     flycheck-python-pycompile-executable "python3")
 
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
-(set-popup-rules!
-  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
-
-(after! dante
-  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+(use-package direnv
+ :config
+ (direnv-mode))

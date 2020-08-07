@@ -19,9 +19,9 @@ import           XMonad.Hooks.ManageDocks       ( docks
 import qualified XMonad.StackSet               as W
 
 -- Layouts
--- import           XMonad.Layout.LayoutModifier
--- import           XMonad.Layout.Spacing
---import           XMonad.Layout.ResizableTile
+import           XMonad.Layout.LayoutModifier
+import           XMonad.Layout.Spacing
+import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.Renamed          ( renamed
                                                 , Rename(Replace)
                                                 )
@@ -80,31 +80,31 @@ myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 -- Below is a variation of the above except no borders are applied
 -- if fewer than two windows. So a single window has no gaps.
 -- For spaces between windows. Not used for now!
--- mySpacing
---   :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
--- mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
+mySpacing
+  :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
+mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 
 -----------------------------------------------------------------
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = avoidStruts (magnified ||| full)
+myLayout = avoidStruts (tiled ||| magnified ||| full)
  where
-  --    -- default tiling algorithm partitions the screen into two panes
-  -- tiled = renamed [Replace "tall"] $ smartBorders $ mySpacing 6 $ ResizableTall
-  --   nmaster
-  --   delta
-  --   ratio
-  --   []
-  --  where
-  --       -- The default number of windows in the master pane
-  --   nmaster = 1
+     -- default tiling algorithm partitions the screen into two panes
+  tiled = renamed [Replace "tall"] $ smartBorders $ mySpacing 6 $ ResizableTall
+    nmaster
+    delta
+    ratio
+    []
+   where
+        -- The default number of windows in the master pane
+    nmaster = 1
 
-  --   -- Default proportion of screen occupied by master pane
-  --   ratio   = 1 / 2
+    -- Default proportion of screen occupied by master pane
+    ratio   = 1 / 2
 
-    -- Percent of screen to increment by when resizing panes
-  --   delta   = 3 / 100
+-- Percent of screen to increment by when resizing panes
+    delta   = 3 / 100
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
   magnified =
@@ -140,9 +140,10 @@ wsMain = "main"
 wsTerm = "term"
 wsMedia = "media"
 wsGame = "game"
-wsVidEdit = "vid-edit"
-wsVirt = "virt"
-myWorkspaces = [wsMain, wsTerm, wsMedia, wsGame, wsVidEdit, wsVirt]
+wsChat = "chat"
+-- wsVidEdit = "vid-edit"
+-- wsVirt = "virt"
+myWorkspaces = [wsMain, wsTerm, wsMedia, wsChat, wsGame]
 
 myProjects :: [Project]
 myProjects =
@@ -155,7 +156,7 @@ myProjects =
     , projectDirectory = "~/code"
     , projectStartHook = Just $ do
                            spawnOn wsTerm myTerminal
-                           runInTerm "-t bashtop" "bashtop"
+                           runInTerm "-t ytop" "ytop"
     }
   , Project
     { projectName      = wsMedia
@@ -170,16 +171,10 @@ myProjects =
                            spawnOn wsGame "steam"
     }
   , Project
-    { projectName      = wsVidEdit
-    , projectDirectory = "~/Videos"
-    , projectStartHook = Just $ do
-                           spawnOn wsVidEdit "shotcut"
-    }
-  , Project
-    { projectName      = wsVirt
+    { projectName      = wsChat
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
-                           spawnOn wsVirt "virtualbox"
+                           spawnOn wsChat "discord"
     }
   ]
 

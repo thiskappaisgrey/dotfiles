@@ -131,11 +131,11 @@ With a prefix ARG always prompt for command to use."
 (map! :leader
       :desc "rss" "o s" #'=rss)
 ;; Make evil-mode up/down operate in screen lines instead of logical lines
-(define-key evil-motion-state-map "j" 'evil-next-visual-line)
-(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-motion-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
   ;; Also in visual mode
-(define-key evil-visual-state-map "j" 'evil-next-visual-line)
-(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 #+END_SRC
 * org
 #+BEGIN_SRC elisp
@@ -149,13 +149,13 @@ With a prefix ARG always prompt for command to use."
   ;; TODO refactor!
   (setq org-capture-templates (append org-capture-templates
     '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n") ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n"))))
-  (require 'ox-extra)
-  (ox-extras-activate '(ignore-headlines))
-  (setq org-latex-listings 'minted
-      org-latex-packages-alist '(("" "minted"))
-      org-latex-pdf-process
-      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  ;; (require 'ox-extra)
+  ;; (ox-extras-activate '(ignore-headlines))
+  ;; (setq org-latex-listings 'minted
+  ;;     org-latex-packages-alist '(("" "minted"))
+  ;;     org-latex-pdf-process
+  ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+  ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "/home/thanawat/reveal.js/")
   (add-to-list 'org-modules 'org-habit)
   )
@@ -239,7 +239,6 @@ With a prefix ARG always prompt for command to use."
            ))
   ;; Agenda-to-appointent hooks
   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
-  ;;(run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
 #+END_SRC
@@ -257,7 +256,8 @@ With a prefix ARG always prompt for command to use."
 
 * Rss(elfeed)
 #+BEGIN_SRC elisp
-(after! elfeed
+(use-package! elfeed
+  :config
     (setq elfeed-search-filter "@1-month-ago +unread +daily")
     (defun elfeed-v-mpv (url)
     "Watch a video from URL in MPV"
@@ -306,4 +306,10 @@ With a prefix ARG always prompt for command to use."
 #+BEGIN_SRC emacs-lisp
 (after! dante
   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+#+END_SRC
+* Direnv
+#+BEGIN_SRC elisp
+(use-package direnv
+ :config
+ (direnv-mode))
 #+END_SRC
