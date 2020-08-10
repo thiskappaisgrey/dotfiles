@@ -93,7 +93,7 @@
        :tools
        ;;ansible
        ;debugger          ; FIXME stepping through code, to help you add bugs
-       ;;direnv
+       direnv
        ;;docker
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
@@ -135,7 +135,7 @@
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ;
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
-       javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
@@ -154,8 +154,9 @@
         +pandoc          ; export-with-pandoc support
         +pomodoro        ; be fruitful with the tomato technique
         +journal
-        +present        ; using org-mode for presentations
-        +roam)              ; notetaking tool for emacs
+        +pretty
+        +present)        ; using org-mode for presentations
+        ;;+roam)              ; notetaking tool for emacs
        ;;perl              ; write code no one else can comprehend
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
@@ -188,5 +189,5 @@
        ;;twitter           ; twitter client https://twitter.com/vnought
 
        :config
-       literate
+       ;; literate
        (default +bindings +smartparens))

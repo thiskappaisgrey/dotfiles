@@ -154,15 +154,15 @@ myProjects =
   , Project
     { projectName      = wsTerm
     , projectDirectory = "~/code"
-    , projectStartHook = Just $ do
+    , projectStartHook =  Just $ do
                            spawnOn wsTerm myTerminal
-                           runInTerm "-t ytop" "ytop"
+                           -- runInTerm "-t ytop" "ytop"
     }
   , Project
     { projectName      = wsMedia
     , projectDirectory = "~/youtube"
     , projectStartHook = Just $ do
-                           runInTerm "-t youtube-viewer" "youtube-viewer"
+                           runInTerm "-t mpsyt" "mpsyt"
     }
   , Project
     { projectName      = wsGame
@@ -402,10 +402,10 @@ myKeys conf =
            , ( "M-S-p"
              , addName "Generate a Password" $ passGeneratePrompt (myXPConfig { autoComplete = Nothing })
              )
-           , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
-           , ( "M-C-S-p"
-             , addName "Remove a Password" $ passRemovePrompt myXPConfig
-             )
+           -- , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
+           -- , ( "M-C-S-p"
+             --, addName "Remove a Password" $ passRemovePrompt myXPConfig
+             --)
            ]
 
 
@@ -430,10 +430,11 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 
 myStartupHook :: X ()
 myStartupHook = do
-  -- spawnOnce "feh --bg-scale ~/Wallpapers/dark-city.jpg"
+  spawnOnce "feh --bg-scale ~/Wallpapers/dark-city.jpg"
   -- compositor, but I don't really need it
   spawnOnce "picom &"
   spawnOnce "emacs --daemon"
+  spawnOnce "dunst &"
 
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
 myManageHook :: ManageHook

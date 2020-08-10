@@ -1,9 +1,3 @@
-(set-popup-rules!
-  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
-
-(after! dante
-  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
 ;; Here are some additional functions/macros that could help you configure Doom:
@@ -21,6 +15,15 @@
 ;;
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
+
+
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(after! dante
+  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+
+
 
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
@@ -115,63 +118,16 @@ With a prefix ARG always prompt for command to use."
   ;; TODO refactor!
   (setq org-capture-templates (append org-capture-templates
     '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n") ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n"))))
-  ;; (require 'ox-extra)
-  ;; (ox-extras-activate '(ignore-headlines))
-  ;; (setq org-latex-listings 'minted
-  ;;     org-latex-packages-alist '(("" "minted"))
-  ;;     org-latex-pdf-process
-  ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-  ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  (require 'ox-extra)
+  (ox-extras-activate '(ignore-headlines))
+  (setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "/home/thanawat/reveal.js/")
-  (add-to-list 'org-modules 'org-habit)
-  )
-
-(use-package! anki-editor
-  :config
-  (setq anki-editor-create-decks t))
-
-(map! :localleader
-      :map org-mode-map
-      (:prefix ("k" . "Anki")
-        :desc "Push" "p" 'anki-editor-push-notes
-        :desc "Retry" "r" 'anki-editor-retry-failure-notes
-        :desc "Insert" "n" 'anki-editor-insert-note
-        (:prefix ("c" . "Cloze")
-          :desc "Dwim" "d" 'anki-editor-cloze-dwim
-          :desc "Region" "r" 'anki-editor-cloze-region
-          )
-        )
- )
-
-;; (use-package! ob-mermaid
-;;   :config
-;;   (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
-(use-package! mermaid-mode
-  :mode "\\.mmd\\'"
-  :config
-  (setq mermaid-mmdc-location "~/custom_packages/node_modules/.bin/mmdc"))
-
-;; (use-package! org-roam-server
-;;   :ensure t
-;;   :config
-;;   (setq org-roam-server-host "127.0.0.1"
-;;         org-roam-server-port 8080
-;;         org-roam-server-export-inline-images t
-;;         org-roam-server-authenticate nil
-;;         org-roam-server-label-truncate t
-;;         org-roam-server-label-truncate-length 60
-;;         org-roam-server-label-wrap-length 20))
-
-(use-package org-journal
-  :config
-  (setq org-journal-file-type 'weekly)
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  (setq org-journal-enable-agenda-integration t)
-  )
-(map! :leader
-      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
-
-(after! org
+  ;; (add-to-list 'org-modules 'org-habit)
+  ;; Enables notifications for org-agenda
   (require 'appt)
   (require 'notifications)
   (setq appt-time-msg-list nil)    ;; clear existing appt list
@@ -193,16 +149,42 @@ With a prefix ARG always prompt for command to use."
   ;; Agenda-to-appointent hooks
   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
-)
+  )
+
+(use-package! anki-editor
+  :config
+  (setq anki-editor-create-decks t))
+
+(map! :localleader
+      :map org-mode-map
+      (:prefix ("k" . "Anki")
+        :desc "Push" "p" 'anki-editor-push-notes
+        :desc "Retry" "r" 'anki-editor-retry-failure-notes
+        :desc "Insert" "n" 'anki-editor-insert-note
+        (:prefix ("c" . "Cloze")
+          :desc "Dwim" "d" 'anki-editor-cloze-dwim
+          :desc "Region" "r" 'anki-editor-cloze-region
+          )
+        )
+ )
+
+(use-package org-journal
+  :config
+  (setq org-journal-file-type 'weekly)
+  (setq org-journal-file-format "%Y-%m-%d.org")
+  (setq org-journal-enable-agenda-integration t)
+  )
+(map! :leader
+      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
 
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
+  :hook (nov-mode . mixed-pitch-mode)
+  :hook (nov-mode . visual-line-mode)
+  :hook (nov-mode . visual-fill-column-mode)
   :config
-  (setq nov-save-place-file (concat doom-cache-dir "nov-places"))
   (setq nov-text-width t)
-  (setq visual-fill-column-center-text t)
-  (add-hook 'nov-mode-hook 'visual-line-mode)
-  )
+  (setq nov-variable-pitch nil))
 
 (use-package! elfeed
   :config
@@ -239,6 +221,3 @@ With a prefix ARG always prompt for command to use."
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
-(use-package direnv
- :config
- (direnv-mode))
