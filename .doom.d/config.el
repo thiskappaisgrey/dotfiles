@@ -16,15 +16,6 @@
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 
-
-(set-popup-rules!
-  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
-
-(after! dante
-  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-
-
-
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
   (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a"))
@@ -53,7 +44,7 @@
     (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
   nil)
 
-;; (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
+(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! pretty-code
   (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
@@ -88,14 +79,6 @@ With a prefix ARG always prompt for command to use."
 
 (map! "C-c o o" 'my/open-with)
 
-(use-package ewal
-  :init (setq ewal-use-built-in-always-p nil
-              ewal-use-built-in-on-failure-p t
-              ewal-built-in-palette "sexy-material"))
-;; (use-package ewal-doom-themes
-;;   :config (progn
-;;             (load-theme 'ewal-doom-vibrant t)
-;;             (enable-theme 'ewal-doom-vibrant)))
 (setq doom-theme 'doom-nord)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
@@ -105,12 +88,12 @@ With a prefix ARG always prompt for command to use."
 (setq evil-escape-key-sequence "fd")
 (map! :leader
       :desc "rss" "o s" #'=rss)
-;; Make evil-mode up/down operate in screen lines instead of logical lines
-;; (define-key evil-motion-state-map "j" 'evil-next-visual-line)
-;; (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
-  ;; Also in visual mode
-;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
-;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+;;Make evil-mode up/down operate in screen lines instead of logical lines
+(define-key evil-motion-state-map "j" 'evil-next-visual-line)
+(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+ ;;Also in visual mode
+(define-key evil-visual-state-map "j" 'evil-next-visual-line)
+(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
 (setq org-directory "~/org/")
 
@@ -126,29 +109,7 @@ With a prefix ARG always prompt for command to use."
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-re-reveal-root "/home/thanawat/reveal.js/")
-  ;; (add-to-list 'org-modules 'org-habit)
-  ;; Enables notifications for org-agenda
-  (require 'appt)
-  (require 'notifications)
-  (setq appt-time-msg-list nil)    ;; clear existing appt list
-  (setq appt-display-interval '5)  ;; warn every 5 minutes from t - appt-message-warning-time
-  (setq
-    appt-message-warning-time '15  ;; send first warning 15 minutes before appointment
-    appt-display-mode-line nil     ;; don't show in the modeline
-    appt-display-format 'window)   ;; pass warnings to the designated window function
-  (setq appt-disp-window-function (function ct/appt-display-native))
-
-  (appt-activate 1)                ;; activate appointment notification
-  ; (display-time) ;; Clock in modeline
-  (defun ct/appt-display-native (min-to-app new-time msg)
-    (notifications-notify
-           :title (format "Event in %s minutes" min-to-app) ; Title
-           :body (format "%s" msg)
-           :urgency 'normal
-           ))
-  ;; Agenda-to-appointent hooks
-  (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
-  (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+  (add-to-list 'org-modules 'org-habit)
   )
 
 (use-package! anki-editor
@@ -168,14 +129,57 @@ With a prefix ARG always prompt for command to use."
         )
  )
 
-(use-package org-journal
+;; (use-package! ob-mermaid
+;;   :config
+;; (setq ob-mermaid-cli-path "~/node_modules/.bin/mmdc"))
+(use-package! mermaid-mode
+  :mode "\\.mmd\\'"
   :config
-  (setq org-journal-file-type 'weekly)
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  (setq org-journal-enable-agenda-integration t)
-  )
-(map! :leader
-      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
+  (setq mermaid-mmdc-location "~/custom_packages/node_modules/.bin/mmdc"))
+
+;; (use-package! org-roam-server
+;;   :ensure t
+;;   :config
+;;   (setq org-roam-server-host "127.0.0.1"
+;;         org-roam-server-port 8080
+;;         org-roam-server-export-inline-images t
+;;         org-roam-server-authenticate nil
+;;         org-roam-server-label-truncate t
+;;         org-roam-server-label-truncate-length 60
+        ;; org-roam-server-label-wrap-length 20))
+
+;; (use-package org-journal
+;;   :config
+;;   (setq org-journal-file-type 'weekly)
+;;   (setq org-journal-file-format "%Y-%m-%d.org")
+;;   (setq org-journal-enable-agenda-integration t)
+;;   )
+;; (map! :leader
+;;       :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
+
+;; (after! org
+;;   (require 'appt)
+;;   (require 'notifications)
+;;   (setq appt-time-msg-list nil)    ;; clear existing appt list
+;;   (setq appt-display-interval '5)  ;; warn every 5 minutes from t - appt-message-warning-time
+;;   (setq
+;;     appt-message-warning-time '15  ;; send first warning 15 minutes before appointment
+;;     appt-display-mode-line nil     ;; don't show in the modeline
+;;     appt-display-format 'window)   ;; pass warnings to the designated window function
+;;   (setq appt-disp-window-function (function ct/appt-display-native))
+
+;;   (appt-activate 1)                ;; activate appointment notification
+;;   ; (display-time) ;; Clock in modeline
+;;   (defun ct/appt-display-native (min-to-app new-time msg)
+;;     (notifications-notify
+;;            :title (format "Event in %s minutes" min-to-app) ; Title
+;;            :body (format "%s" msg)
+;;            :urgency 'normal
+;;            ))
+;;   ;; Agenda-to-appointent hooks
+;;   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
+;;   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+;; )
 
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
@@ -221,3 +225,20 @@ With a prefix ARG always prompt for command to use."
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
+;; (use-package direnv
+;;  :config
+ ;; (direnv-mode))
+
+;;(use-package org-present
+ ;; :config
+  ;;(map! :map org-present-mode-keymap
+   ;;       :n [C-right] #'org-present-next
+    ;;      :n [C-left]  #'org-present-prev
+     ;;     )
+    ;;(add-hook 'org-present-mode-hook #'evil-normalize-keymaps))
+
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(after! dante
+  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))

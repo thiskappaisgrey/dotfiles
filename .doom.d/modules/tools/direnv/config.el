@@ -16,6 +16,8 @@
   :hook (doom-first-file . envrc-global-mode)
   :mode ("\\.envrc\\'" . +direnv-rc-mode)
   :config
+  ;; Add a hook, temporarily, for node-modules
+  (add-hook 'envrc-mode-hook #'add-node-modules-path)
   (define-derived-mode +direnv-rc-mode sh-mode "envrc"
     "Major mode for .envrc files."
     ;; Fontify special .envrc keywords; it's a good indication of whether or not
@@ -23,7 +25,6 @@
     (font-lock-add-keywords
      nil `((,(regexp-opt +direnv-keywords 'symbols)
             (0 font-lock-keyword-face)))))
-
   (defadvice! +direnv--fail-gracefully-a (&rest _)
     "Don't try to use direnv if the executable isn't present."
     :before-while #'envrc-mode

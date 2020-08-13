@@ -103,7 +103,8 @@
          ;;+docsets)        ; ...or in Dash docsets locally
        lsp
        ;;macos             ; MacOS-specific commands
-       magit             ; a git porcelain for Emacs
+       (magit
+        +forge)             ; a git porcelain for Emacs
        make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        pdf               ; pdf enhancements
@@ -155,8 +156,8 @@
         +pomodoro        ; be fruitful with the tomato technique
         +journal
         +pretty
-        +present)        ; using org-mode for presentations
-        ;;+roam)              ; notetaking tool for emacs
+        +present        ; using org-mode for presentations
+        +roam)              ; notetaking tool for emacs
        ;;perl              ; write code no one else can comprehend
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
@@ -189,5 +190,5 @@
        ;;twitter           ; twitter client https://twitter.com/vnought
 
        :config
-       ;; literate
+       literate
        (default +bindings +smartparens))
