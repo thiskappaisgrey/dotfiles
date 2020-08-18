@@ -52,32 +52,11 @@
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
-(setq display-line-numbers-type 'relative)
+(setq display-line-numbers-type nil)
 ;; Makes visual-lines work better
 (setq visual-fill-column-center-text t)
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-;; source https://github.com/jethrokuan/dots/blob/master/.doom.d/config.el
-;; I'm not very well versed in elisp, so I'm not sure what's happening
-(defun my/open-with (arg)
-  "Open visited file in default external program.
-When in dired mode, open file under the cursor.
-With a prefix ARG always prompt for command to use."
-  (interactive "P")
-  (let* ((current-file-name
-          (if (eq major-mode 'dired-mode)
-              (dired-get-file-for-visit)
-            buffer-file-name))
-         (open (pcase system-type
-                 (`darwin "open")
-                 ((or `gnu `gnu/linux `gnu/kfreebsd) "xdg-open")))
-         (program (if (or arg (not open))
-                      (read-shell-command "Open current file with: ")
-                    open)))
-    (call-process program nil 0 nil current-file-name)))
-
-(map! "C-c o o" 'my/open-with)
 
 (setq doom-theme 'doom-nord)
 
@@ -89,11 +68,11 @@ With a prefix ARG always prompt for command to use."
 (map! :leader
       :desc "rss" "o s" #'=rss)
 ;;Make evil-mode up/down operate in screen lines instead of logical lines
-(define-key evil-motion-state-map "j" 'evil-next-visual-line)
-(define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-motion-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
  ;;Also in visual mode
-(define-key evil-visual-state-map "j" 'evil-next-visual-line)
-(define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
+;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
 (setq org-directory "~/org/")
 
@@ -229,13 +208,14 @@ With a prefix ARG always prompt for command to use."
 ;;  :config
  ;; (direnv-mode))
 
-;;(use-package org-present
- ;; :config
-  ;;(map! :map org-present-mode-keymap
-   ;;       :n [C-right] #'org-present-next
-    ;;      :n [C-left]  #'org-present-prev
-     ;;     )
-    ;;(add-hook 'org-present-mode-hook #'evil-normalize-keymaps))
+(map! :map org-present-mode-keymap
+        :g [C-right] #'org-present-next
+        :g [C-left]  #'org-present-prev
+        )
+(after! org-tree-slide (setq org-tree-slide-never-touch-face t))
+
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
 
 (set-popup-rules!
   '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))

@@ -25,7 +25,7 @@
        (ivy
         +fuzzy
         +prescient
-        ;;+childframe
+        ;;+childframe  
         +icons          ; icons!
         )               ; a search engine for love and life
 
