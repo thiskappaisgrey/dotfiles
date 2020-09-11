@@ -18,6 +18,13 @@
 ;; (package! ob-mermaid)
 (package! mermaid-mode)
 (package! evil-tutor)
+
+;; Typing Practice
+;;(package! typing)
+(package! speed-type)
+(package! typit)
+;; Openwith
+(package! openwith)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)

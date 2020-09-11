@@ -30,7 +30,7 @@
                       (smtpmail-default-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-service . 587)
-                      (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
+                      (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
                     t)
 
 (set-email-account! "personal-gmail"
@@ -39,26 +39,27 @@
     (mu4e-trash-folder      . "/personal-gmail/[acc2].Trash")
     (mu4e-refile-folder     . "/personal-gmail/[acc2].Archive")
     (smtpmail-starttls-credentials . (("smtp.gmail.com" 587 nil nil)))
+    (smtpmail-default-smtp-server . "smtp.gmail.com")
+    (smtpmail-smtp-server . "smtp.gmail.com")
     (smtpmail-smtp-user     . "thanatechaumnuaiwit@gmail.com")
     (user-mail-address      . "thanatechaumnuaiwit@gmail.com")    ;; only needed for mu < 1.4
-    (mu4e-compose-signature . "---\nThanawat Techaumnuaiwit"))
+    (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
 
 (setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
-(after! pretty-code
-  (setq +pretty-code-hasklig-font-name "Hasklug Nerd Font"))
-(setq tab-width 2)
+(after! ispell
+  (setq ispell-dictionary "en"))
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
-(setq display-line-numbers-type nil)
+(setq display-line-numbers-type 'nil)
 ;; Makes visual-lines work better
 (setq visual-fill-column-center-text t)
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-nord)
+(setq doom-theme 'doom-wilmersdorf)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -75,6 +76,11 @@
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
 (setq org-directory "~/org/")
+(setq +org-capture-todo-file "agenda/todo.org")
+(setq +org-capture-journal-file "agenda/journal.org")
+(setq +org-capture-projects-file "agenda/projects.org")
+(setq +org-capture-notes-file "agenda/notes.org")
+(setq org-agenda-files (list (concat org-directory "agenda")))
 
 (after! org
   ;; TODO refactor!
@@ -127,38 +133,43 @@
 ;;         org-roam-server-label-truncate-length 60
         ;; org-roam-server-label-wrap-length 20))
 
-;; (use-package org-journal
-;;   :config
-;;   (setq org-journal-file-type 'weekly)
-;;   (setq org-journal-file-format "%Y-%m-%d.org")
-;;   (setq org-journal-enable-agenda-integration t)
-;;   )
-;; (map! :leader
-;;       :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
+(use-package org-journal
+  :config
+  (setq org-journal-file-type 'weekly)
+  (setq org-journal-file-format "%Y-%m-%d.org")
+  (setq org-journal-enable-agenda-integration t)
+  )
+(map! :leader
+      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
 
-;; (after! org
-;;   (require 'appt)
-;;   (require 'notifications)
-;;   (setq appt-time-msg-list nil)    ;; clear existing appt list
-;;   (setq appt-display-interval '5)  ;; warn every 5 minutes from t - appt-message-warning-time
-;;   (setq
-;;     appt-message-warning-time '15  ;; send first warning 15 minutes before appointment
-;;     appt-display-mode-line nil     ;; don't show in the modeline
-;;     appt-display-format 'window)   ;; pass warnings to the designated window function
-;;   (setq appt-disp-window-function (function ct/appt-display-native))
+(after! org
+  (require 'appt)
+  (require 'notifications)
+  (setq appt-time-msg-list nil)    ;; clear existing appt list
+  (setq appt-display-interval '5)  ;; warn every 5 minutes from t - appt-message-warning-time
+  (setq
+    appt-message-warning-time '15  ;; send first warning 15 minutes before appointment
+    appt-display-mode-line nil     ;; don't show in the modeline
+    appt-display-format 'window)   ;; pass warnings to the designated window function
+  (setq appt-disp-window-function (function ct/appt-display-native))
 
-;;   (appt-activate 1)                ;; activate appointment notification
-;;   ; (display-time) ;; Clock in modeline
-;;   (defun ct/appt-display-native (min-to-app new-time msg)
-;;     (notifications-notify
-;;            :title (format "Event in %s minutes" min-to-app) ; Title
-;;            :body (format "%s" msg)
-;;            :urgency 'normal
-;;            ))
-;;   ;; Agenda-to-appointent hooks
-;;   (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
-;;   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
-;; )
+  (appt-activate 1)                ;; activate appointment notification
+  ; (display-time) ;; Clock in modeline
+  (defun ct/appt-display-native (min-to-app new-time msg)
+    (notifications-notify
+           :title (format "Event in %s minutes" min-to-app) ; Title
+           :body (format "%s" msg)
+           :urgency 'normal
+           ))
+  ;; Agenda-to-appointent hooks
+  (org-agenda-to-appt)             ;; generate the appt list from org agenda files on emacs launch
+  (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
+  (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
+)
+
+(map! :leader
+      :prefix ("a" . "Personal Kbds")
+      :desc "Add word to dictionary" "w" #'add-word-to-dictionary)
 
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
@@ -188,8 +199,8 @@
         (unless (use-region-p) (forward-line))))
 
     (define-key elfeed-search-mode-map (kbd "M-v") 'elfeed-view-mpv)
+    (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
     )
-(add-hook! 'elfeed-search-mode-hook 'elfeed-update)
 
 (after! lsp-ui
   (setq lsp-ui-sideline-show-hover t))
@@ -220,5 +231,27 @@
 (set-popup-rules!
   '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
 
+(display-battery-mode)
+
 (after! dante
   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+
+;; Opens video file in mpv
+;; using openwith for this is a kind of bloated solution, however it works
+(use-package! openwith
+  :after-call pre-command-hook
+  :config
+  (openwith-mode t)
+  (setq openwith-associations '(("\\.mp4\\'" "mpv" (file)) ("\\.webm\\'" "mpv" (file))))
+  )
+
+(after! circe
+(set-irc-server! "Freenode"
+  `(
+    :host "irc.freenode.net"
+    :tls t
+    :port 6697
+    :nick "thiskappaisgrey"
+    :nickserv-nick "thiskappaisgrey"
+    :nickserv-password (lambda (&rest _) (+pass-get-secret "irc/thiskappaisgrey"))
+    )))

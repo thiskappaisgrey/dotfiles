@@ -45,6 +45,7 @@ import           XMonad.Util.WorkspaceCompare   ( getSortByIndex )
 -- Prompts
 import           XMonad.Prompt
 import           XMonad.Prompt.Input
+import           XMonad.Prompt.FuzzyMatch
 -- import           XMonad.Prompt.Man
 import           XMonad.Prompt.Pass
 import           XMonad.Prompt.Shell            ( shellPrompt )
@@ -201,9 +202,10 @@ myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , historySize         = 256
                  , historyFilter       = id
                  , defaultText         = []
-                 , autoComplete        = Just 100000  -- set Just 100000 for .1 sec
+                 -- , autoComplete        = Just 100000  -- set Just 100000 for .1 sec
                  , showCompletionOnTab = False
-                 , searchPredicate     = isPrefixOf
+                 , searchPredicate     = fuzzyMatch
+                 , sorter              = fuzzySort
                  , alwaysHighlight     = True
                  , maxComplRows        = Nothing      -- set to Just 5 for 5 rows
                  }
@@ -301,6 +303,7 @@ myKeys conf =
            , ("M-b"       , addName "Launch Brave" $ spawn myBrowser)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
            , ("M-<Space>" , addName "Shell/App Prompt" $ shellPrompt myXPConfig)
+           , ("M-c"       , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture")
            , ("M-s s"     , addName "Cancel submap" $ return ())
            , ("M-s M-s"   , addName "Cancel submap" $ return ())
            ]
@@ -370,7 +373,7 @@ myKeys conf =
     ^++^ subKeys
            "Workspaces"
            (  [ ( "M-;"
-                , addName "Switch to Project" $ switchProjectPrompt (myXPConfig { autoComplete = Nothing })
+                , addName "Switch to Project" $ switchProjectPrompt myXPConfig
                 )
               , ( "M-S-;"
                 , addName "Shift to Project" $ shiftToProjectPrompt myXPConfig
@@ -400,7 +403,7 @@ myKeys conf =
   -- PASS - the UNIX password manager
            , ("M-p", addName "Get a Password" $ passPrompt myXPConfig)
            , ( "M-S-p"
-             , addName "Generate a Password" $ passGeneratePrompt (myXPConfig { autoComplete = Nothing })
+             , addName "Generate a Password" $ passGeneratePrompt myXPConfig
              )
            -- , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
            -- , ( "M-C-S-p"
@@ -430,7 +433,7 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 
 myStartupHook :: X ()
 myStartupHook = do
-  spawnOnce "feh --bg-scale ~/Wallpapers/dark-city.jpg"
+  spawnOnce "feh --bg-center ~/Wallpapers/ian-espinosa-rX12B5uX7QM-unsplash.jpg"
   -- compositor, but I don't really need it
   spawnOnce "picom &"
   spawnOnce "emacs --daemon"
