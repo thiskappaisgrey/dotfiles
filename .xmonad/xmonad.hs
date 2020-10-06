@@ -70,7 +70,7 @@ import           System.Exit
 
 -- Default apps
 myTerminal = "alacritty"
-myBrowser = "brave"
+myBrowser = "firefox"
 -- This will start the emacs server if not already started
 myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 
@@ -433,8 +433,7 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 
 myStartupHook :: X ()
 myStartupHook = do
-  spawnOnce "feh --bg-center ~/Wallpapers/ian-espinosa-rX12B5uX7QM-unsplash.jpg"
-  -- compositor, but I don't really need it
+  spawnOnce "~/.fehbg &"
   spawnOnce "picom &"
   spawnOnce "emacs --daemon"
   spawnOnce "dunst &"
@@ -452,7 +451,6 @@ showKeybindings x = addName "Show Keybindings" $ io $ do
 main :: IO ()
 main = do
   xmproc <- spawnPipe "xmobar ~/.xmonad/xmobars/xmobar-nord.conf"
-
   xmonad
     $ dynamicProjects myProjects
     $ addDescrKeys' ((mod4Mask .|. shiftMask, xK_slash), showKeybindings) myKeys
