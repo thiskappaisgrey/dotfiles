@@ -45,9 +45,9 @@
        (popup            ; tame sudden yet inevitable temporary windows
         +all             ; catch all popups that start with an asterix
         +defaults)       ; default popup rules
-       ;; NOTE Enalbe later when using hasklig font
-       (ligatures
-         +hasklig)       ; replace bits of code with pretty symbols
+       ;; NOTE Enalbe later when using hasklig font, This could hinder some performance?
+       ;; (ligatures
+       ;;   +hasklig)       ; replace bits of code with pretty symbols
        ;;tabs              ; an tab bar for Emacs
        ;;treemacs          ; a project drawer, like neotree but cooler
        ;;unicode           ; extended unicode support for various languages
@@ -56,6 +56,7 @@
        window-select     ; visually switch windows
        workspaces        ; tab emulation, persistence & separate workspaces
        zen               ; distraction-free coding or writing
+       ;;emoji
 
        :editor
        (evil +everywhere); come to the dark side, we have cookies
@@ -78,6 +79,7 @@
        electric          ; smarter, keyword-based electric-indent
        ibuffer           ; interactive buffer management
        vc                ; version-control and Emacs, sitting in a tree
+       undo
 
        :term
        eshell            ; a consistent, cross-platform shell (WIP)
@@ -100,12 +102,14 @@
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
-       (lookup)           ; helps you navigate your code and documentation
+       (lookup
+        +dictionary
+        +offline)           ; helps you navigate your code and documentation
          ;;+docsets)        ; ...or in Dash docsets locally
        lsp
        ;;macos             ; MacOS-specific commands
-       (magit               ; a git porcelain for Emacs
-        +forge)
+       (magit)               ; a git porcelain for Emacs
+        ;;+forge)
        make                ; run make tasks from Emacs
        pass              ; password manager for nerds
        pdf                 ; pdf enhancements
@@ -114,6 +118,8 @@
        ;;terraform         ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
        ;;upload            ; map local to remote projects via ssh/ftp
+       taskrunner          ; emacs task runner(npm, etc)
+       biblio
 
        :lang
        ;;agda              ; types of types of types of types...
@@ -154,10 +160,12 @@
         ;;+hugo            ; use Emacs for hugo blogging
         ;;+jupyter        ; ipython/jupyter support for babel
         +pandoc          ; export-with-pandoc support
-        ;;+pomodoro        ; be fruitful with the tomato technique
-        +journal
-        +pretty
+        +pomodoro        ; be fruitful with the tomato technique
+        ;;+journal
+        ;;+pretty
         +present        ; using org-mode for presentations
+        +gnuplot
+        +noter
         +roam)              ; notetaking tool for emacs
        ;;perl              ; write code no one else can comprehend
        ;;php               ; perl's insecure younger brother

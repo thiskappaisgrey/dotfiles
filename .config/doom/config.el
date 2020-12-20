@@ -46,7 +46,6 @@
     (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
 
-(setq doom-font (font-spec :family "Mononoki Nerd Font" :size 18))
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! ispell
   (setq ispell-dictionary "en"))
@@ -59,7 +58,7 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-wilmersdorf)
+(setq doom-theme 'doom-material)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -75,56 +74,19 @@
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
-(setq org-directory "~/org/")
-(setq +org-capture-todo-file "agenda/todo.org")
-(setq +org-capture-journal-file "agenda/journal.org")
-(setq +org-capture-projects-file "agenda/projects.org")
-(setq +org-capture-notes-file "agenda/notes.org")
-(setq org-agenda-files (list (concat org-directory "agenda")))
+(setq org-directory "~/org/"
+      +org-capture-todo-file "agenda/todo.org"
+      +org-capture-projects-file "agenda/projects.org"
+      org-agenda-files (list (concat org-directory "agenda"))
+      org-re-reveal-root "/home/thanawat/reveal.js/"
+      org-export-with-toc nil
+      org-export-with-section-numbers nil)
 
 (after! org
-
   (setq org-capture-templates
-    '(("h" "Homework" entry (file "~/org/homework.org" ) "* TODO %?\n  %i\n")
+    '(("h" "Homework" entry (file+headline  +org-capture-todo-file "Homework") "* TODO %?\n  %i\n")
       ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n")
-      ("t" "Personal todo" entry (file+headline +org-capture-todo-file "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-      ("n" "Personal notes" entry (file+headline +org-capture-notes-file "Inbox") "* %u %?\n%i\n%a" :prepend t)
-      ("j" "Journal" entry (file+olp+datetree +org-capture-journal-file) "* %U %?\n%i\n%a" :prepend t)
-          ;; Will use {project-root}/{todo,notes,changelog}.org, unless a
-          ;; {todo,notes,changelog}.org file is found in a parent directory.
-          ;; Uses the basename from `+org-capture-todo-file',
-          ;; `+org-capture-changelog-file' and `+org-capture-notes-file'.
-      ("p" "Templates for projects")
-      ("pt" "Project-local todo" entry  ; {project-root}/todo.org
-       (file+headline +org-capture-project-todo-file "Inbox")
-           "* TODO %?\n%i\n%a" :prepend t)
-      ("pn" "Project-local notes" entry  ; {project-root}/notes.org
-       (file+headline +org-capture-project-notes-file "Inbox")
-           "* %U %?\n%i\n%a" :prepend t)
-      ("pc" "Project-local changelog" entry  ; {project-root}/changelog.org
-        (file+headline +org-capture-project-changelog-file "Unreleased")
-        "* %U %?\n%i\n%a" :prepend t)
-
-          ;; Will use {org-directory}/{+org-capture-projects-file} and store
-          ;; these under {ProjectName}/{Tasks,Notes,Changelog} headings. They
-          ;; support `:parents' to specify what headings to put them under, e.g.
-          ;; :parents ("Projects")
-      ("o" "Centralized templates for projects")
-      ("ot" "Project todo" entry
-       (function +org-capture-central-project-todo-file)
-                "* TODO %?\n %i\n %a"
-                :heading "Tasks"
-                :prepend nil)
-      ("on" "Project notes" entry
-           (function +org-capture-central-project-notes-file)
-           "* %U %?\n %i\n %a"
-           :heading "Notes"
-           :prepend t)
-      ("oc" "Project changelog" entry
-       (function +org-capture-central-project-changelog-file)
-           "* %U %?\n %i\n %a"
-           :heading "Changelog"
-           :prepend t)
+      ("t" "GTD" entry (file+headline +org-capture-todo-file "Inbox") "* TODO %?\n%i\n%a" :prepend t)
     ))
 
 
@@ -135,7 +97,6 @@
   ;;     org-latex-pdf-process
   ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-  (setq org-re-reveal-root "/home/thanawat/reveal.js/")
   (add-to-list 'org-modules 'org-habit)
   )
 
@@ -174,15 +135,11 @@
 ;;         org-roam-server-label-truncate t
 ;;         org-roam-server-label-truncate-length 60
         ;; org-roam-server-label-wrap-length 20))
-
-(use-package org-journal
-  :config
-  (setq org-journal-file-type 'weekly)
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  (setq org-journal-enable-agenda-integration t)
-  )
-(map! :leader
-      :desc "New scheduled entry" "n j J" #'org-journal-new-scheduled-entry)
+(use-package! org-roam
+  :init
+    (setq org-roam-dailies-directory "daily/"
+          org-roam-db-gc-threshold most-positive-fixnum
+           org-id-link-to-org-use-id t))
 
 (after! org
   (require 'appt)
@@ -224,7 +181,7 @@
 
 (use-package! elfeed
   :config
-    (setq elfeed-search-filter "@1-month-ago +unread +daily")
+    (setq elfeed-search-filter "@1-week-ago +unread +daily")
     (defun elfeed-v-mpv (url)
     "Watch a video from URL in MPV"
     (async-shell-command (format "mpv \"%s\"" url)))
@@ -251,8 +208,8 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
+(setq python-shell-interpreter "python3"
+     flycheck-python-pycompile-executable "python3")
 
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
@@ -261,19 +218,66 @@
 ;;  :config
  ;; (direnv-mode))
 
-  (map! :map org-present-mode-keymap
+(map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
         :g [C-left]  #'org-present-prev
         )
 (after! org-tree-slide (setq org-tree-slide-never-touch-face t))
 
-(use-package emojify
-  :hook (after-init . global-emojify-mode))
-
 (set-popup-rules!
   '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
 
 (display-battery-mode)
+
+(use-package! org-ref
+  :after org
+  :config
+  (setq org-ref-completion-library 'org-ref-ivy-cite
+    org-ref-default-bibliography `,(list (concat org-directory "roam/biblio.bib"))
+    reftex-default-bibliography  `,(list (concat org-directory "roam/biblio.bib")))
+  )
+(use-package! org-roam-bibtex
+  :after org-roam
+  :hook (org-roam-mode . org-roam-bibtex-mode)
+  :config
+  (setq org-roam-bibtex-preformat-keywords
+   '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+  (setq orb-templates
+        `(("r" "ref" plain (function org-roam-capture--get-point)
+           ""
+           :head ,(concat
+                   "#+title:${title}\n"
+                   "#+roam_key: ${ref}\n\n"
+                   "* ${title}\n"
+                   "  :PROPERTIES:\n"
+                   "  :Custom_ID: ${=key=}\n"
+                   "  :URL: ${url}\n"
+                   "  :AUTHOR: ${author-or-editor}\n"
+                   "  :NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+                   "  :NOTER_PAGE: \n"
+                   "  :END:\n")
+           :unnarrowed t))))
+(use-package! bibtex-completion
+  :config
+  (setq bibtex-completion-notes-path "~/org/roam/lit"
+        bibtex-completion-bibliography "~/org/roam/biblio.bib"
+        bibtex-completion-pdf-field "file"
+        bibtex-completion-notes-template-multiple-files
+         (concat
+          "#+title: ${title}\n"
+          "#+roam_key: cite:${=key=}\n"
+          "* TODO Notes\n"
+          ":PROPERTIES:\n"
+          ":Custom_ID: ${=key=}\n"
+          ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+          ":AUTHOR: ${author-abbrev}\n"
+          ":JOURNAL: ${journaltitle}\n"
+          ":DATE: ${date}\n"
+          ":YEAR: ${year}\n"
+          ":DOI: ${doi}\n"
+          ":URL: ${url}\n"
+          ":END:\n\n"
+          )))
 
 (after! dante
   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
