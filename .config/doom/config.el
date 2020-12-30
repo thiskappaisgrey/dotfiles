@@ -18,7 +18,9 @@
 
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
-  (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a"))
+  (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a")
+  (setq mu4e-change-filenames-when-moving t)
+  )
 (set-email-account! "ucsb"
                     '((user-mail-address      . "thanawat@ucsb.edu")
                       (smtpmail-smtp-user     . "thanawat@ucsb.edu")

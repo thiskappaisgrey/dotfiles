@@ -162,8 +162,8 @@ myProjects =
   , Project
     { projectName      = wsMedia
     , projectDirectory = "~/youtube"
-    , projectStartHook = Just $ do
-                           runInTerm "-t mpsyt" "mpsyt"
+    , projectStartHook = Nothing
+
     }
   , Project
     { projectName      = wsGame

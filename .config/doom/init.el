@@ -162,7 +162,7 @@
         +pandoc          ; export-with-pandoc support
         +pomodoro        ; be fruitful with the tomato technique
         ;;+journal
-        ;;+pretty
+        +pretty
         +present        ; using org-mode for presentations
         +gnuplot
         +noter

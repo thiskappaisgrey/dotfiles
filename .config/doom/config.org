@@ -28,7 +28,9 @@ Keep for refrence later..
 #+BEGIN_SRC elisp
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
-  (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a"))
+  (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a")
+  (setq mu4e-change-filenames-when-moving t)
+  )
 (set-email-account! "ucsb"
                     '((user-mail-address      . "thanawat@ucsb.edu")
                       (smtpmail-smtp-user     . "thanawat@ucsb.edu")
@@ -129,7 +131,9 @@ Keep for refrence later..
     '(("h" "Homework" entry (file+headline  +org-capture-todo-file "Homework") "* TODO %?\n  %i\n")
       ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n")
       ("t" "GTD" entry (file+headline +org-capture-todo-file "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-    ))
+        )
+    org-hide-emphasis-markers t
+    )
 
 
   (require 'ox-extra)
@@ -236,7 +240,6 @@ Keep for refrence later..
   )
 (use-package! org-roam-bibtex
   :after org-roam
-  :hook (org-roam-mode . org-roam-bibtex-mode)
   :config
   (setq org-roam-bibtex-preformat-keywords
    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
@@ -255,6 +258,7 @@ Keep for refrence later..
                    "  :NOTER_PAGE: \n"
                    "  :END:\n")
            :unnarrowed t))))
+(add-hook! org-roam-mode #'org-roam-bibtex-mode)
 (use-package! bibtex-completion
   :config
   (setq bibtex-completion-notes-path "~/org/roam/lit"
