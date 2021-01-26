@@ -21,6 +21,7 @@ import qualified XMonad.StackSet               as W
 -- Layouts
 import           XMonad.Layout.LayoutModifier
 import           XMonad.Layout.Spacing
+import           XMonad.Layout.SimpleFloat
 import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.Renamed          ( renamed
                                                 , Rename(Replace)
@@ -89,10 +90,11 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = avoidStruts (tiled ||| magnified ||| full)
+myLayout = avoidStruts (tiled ||| simpleFloat ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
-  tiled = renamed [Replace "tall"] $ smartBorders $ mySpacing 6 $ ResizableTall
+   -- add mySpacing to the composition to add spacing to tiled windows.
+  tiled = renamed [Replace "tall"] $ smartBorders $ ResizableTall
     nmaster
     delta
     ratio
@@ -108,11 +110,11 @@ myLayout = avoidStruts (tiled ||| magnified ||| full)
     delta   = 3 / 100
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
-  magnified =
-    renamed [Replace "magified"] $ smartBorders $ magnifiercz' 1.4 $ Tall
-      nmaster
-      delta
-      ratio
+  -- magnified =
+  --   renamed [Replace "magified"] $ smartBorders $ magnifiercz' 1.4 $ Tall
+  --     nmaster
+  --     delta
+  --     ratio
    where
         -- The default number of windows in the master pane
     nmaster = 1
@@ -434,7 +436,6 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "~/.fehbg &"
-  spawnOnce "picom &"
   spawnOnce "emacs --daemon"
   spawnOnce "dunst &"
 
@@ -461,7 +462,8 @@ main = do
         , startupHook        = myStartupHook
         , terminal           = myTerminal
         , modMask            = mod4Mask
-        , borderWidth        = 3
+        -- No borders because picom transparency makes it obvious which window is focused
+        , borderWidth        = 0
                         -- do `toWorkspaces myWorkspaces` for treeselect
         , workspaces         = myWorkspaces
         , handleEventHook    = handleEventHook def <+> fullscreenEventHook
