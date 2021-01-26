@@ -25,6 +25,9 @@ Keep for refrence later..
 ;; they are implemented.
 #+END_SRC
 * Personal Info/Email setup
+:PROPERTIES:
+:ID:       f419a1b4-b509-4eb1-b4c4-5d8f4c63f304
+:END:
 #+BEGIN_SRC elisp
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
@@ -42,7 +45,7 @@ Keep for refrence later..
                       (smtpmail-default-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-service . 587)
-                      (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
+                      (mu4e-compose-signature . "Best,\n Thanawat Techaumnuaiwit"))
                     t)
 
 (set-email-account! "personal-gmail"
@@ -112,27 +115,27 @@ Keep for refrence later..
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 #+END_SRC
-* org
+* Org
 ** Variables
 #+BEGIN_SRC elisp
-(setq org-directory "~/org/"
-      +org-capture-todo-file "agenda/todo.org"
-      +org-capture-projects-file "agenda/projects.org"
-      org-agenda-files (list (concat org-directory "agenda"))
+(after! org
+  (setq org-directory "~/org/"
+      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org")
       org-re-reveal-root "/home/thanawat/reveal.js/"
       org-export-with-toc nil
+      org-hide-emphasis-markers t
+      org-log-into-drawer t
+      org-log-done 'time
       org-export-with-section-numbers nil)
-
+)
 #+END_SRC
 ** Capture Templates/Other tweaks
 #+BEGIN_SRC elisp
 (after! org
   (setq org-capture-templates
-    '(("h" "Homework" entry (file+headline  +org-capture-todo-file "Homework") "* TODO %?\n  %i\n")
-      ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n")
-      ("t" "GTD" entry (file+headline +org-capture-todo-file "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+    '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+      ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
         )
-    org-hide-emphasis-markers t
     )
 
 
@@ -143,7 +146,6 @@ Keep for refrence later..
   ;;     org-latex-pdf-process
   ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-  (add-to-list 'org-modules 'org-habit)
   )
 #+END_SRC
 
@@ -229,6 +231,9 @@ Keep for refrence later..
       :desc "Add word to dictionary" "w" #'add-word-to-dictionary)
 #+END_SRC
 ** Org-ref
+:PROPERTIES:
+:ID:       bfdb1780-669c-4651-80fd-020a3dd72d17
+:END:
 [[https://github.com/jkitchin/org-ref][org-ref]] is a package that manages citations.
 #+begin_src emacs-lisp
 (use-package! org-ref
@@ -240,25 +245,29 @@ Keep for refrence later..
   )
 (use-package! org-roam-bibtex
   :after org-roam
+
+  :hook (org-roam-mode . org-roam-bibtex-mode)
   :config
   (setq org-roam-bibtex-preformat-keywords
    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+
   (setq orb-templates
         `(("r" "ref" plain (function org-roam-capture--get-point)
            ""
+           :file-name "lit/${slug}"
            :head ,(concat
                    "#+title:${title}\n"
                    "#+roam_key: ${ref}\n\n"
-                   "* ${title}\n"
-                   "  :PROPERTIES:\n"
-                   "  :Custom_ID: ${=key=}\n"
-                   "  :URL: ${url}\n"
-                   "  :AUTHOR: ${author-or-editor}\n"
-                   "  :NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-                   "  :NOTER_PAGE: \n"
-                   "  :END:\n")
-           :unnarrowed t))))
-(add-hook! org-roam-mode #'org-roam-bibtex-mode)
+                   "* Notes"
+                   ":PROPERTIES:\n"
+                   ":Custom_ID: ${=key=}\n"
+                   ":URL: ${url}\n"
+                   ":AUTHOR: ${author-abbrev}\n"
+                   ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+                   ":NOTER_PAGE: \n"
+                   ":END:\n")
+           :unnarrowed t)))
+)
 (use-package! bibtex-completion
   :config
   (setq bibtex-completion-notes-path "~/org/roam/lit"
@@ -346,12 +355,6 @@ For reading EPUBs.
 #+BEGIN_SRC emacs-lisp
 (after! dante
   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-#+END_SRC
-* Direnv
-#+BEGIN_SRC elisp
-;; (use-package direnv
-;;  :config
- ;; (direnv-mode))
 #+END_SRC
 * Presentations
 #+BEGIN_SRC elisp

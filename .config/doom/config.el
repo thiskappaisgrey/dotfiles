@@ -32,7 +32,7 @@
                       (smtpmail-default-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-server . "smtp.gmail.com")
                       (smtpmail-smtp-service . 587)
-                      (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
+                      (mu4e-compose-signature . "Best,\n Thanawat Techaumnuaiwit"))
                     t)
 
 (set-email-account! "personal-gmail"
@@ -76,20 +76,23 @@
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 
-(setq org-directory "~/org/"
-      +org-capture-todo-file "agenda/todo.org"
-      +org-capture-projects-file "agenda/projects.org"
-      org-agenda-files (list (concat org-directory "agenda"))
+(after! org
+  (setq org-directory "~/org/"
+      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org")
       org-re-reveal-root "/home/thanawat/reveal.js/"
       org-export-with-toc nil
+      org-hide-emphasis-markers t
+      org-log-into-drawer t
+      org-log-done 'time
       org-export-with-section-numbers nil)
+)
 
 (after! org
   (setq org-capture-templates
-    '(("h" "Homework" entry (file+headline  +org-capture-todo-file "Homework") "* TODO %?\n  %i\n")
-      ("b" "Blog idea" entry (file "~/org/blog-ideas.org" ) "* TODO %?\n  %i\n")
-      ("t" "GTD" entry (file+headline +org-capture-todo-file "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-    ))
+    '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+      ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+        )
+    )
 
 
   (require 'ox-extra)
@@ -99,7 +102,6 @@
   ;;     org-latex-pdf-process
   ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-  (add-to-list 'org-modules 'org-habit)
   )
 
 (use-package! anki-editor
@@ -216,10 +218,6 @@
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
-;; (use-package direnv
-;;  :config
- ;; (direnv-mode))
-
 (map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
         :g [C-left]  #'org-present-prev
@@ -240,25 +238,29 @@
   )
 (use-package! org-roam-bibtex
   :after org-roam
+
   :hook (org-roam-mode . org-roam-bibtex-mode)
   :config
   (setq org-roam-bibtex-preformat-keywords
    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+
   (setq orb-templates
         `(("r" "ref" plain (function org-roam-capture--get-point)
            ""
+           :file-name "lit/${slug}"
            :head ,(concat
                    "#+title:${title}\n"
                    "#+roam_key: ${ref}\n\n"
-                   "* ${title}\n"
-                   "  :PROPERTIES:\n"
-                   "  :Custom_ID: ${=key=}\n"
-                   "  :URL: ${url}\n"
-                   "  :AUTHOR: ${author-or-editor}\n"
-                   "  :NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-                   "  :NOTER_PAGE: \n"
-                   "  :END:\n")
-           :unnarrowed t))))
+                   "* Notes"
+                   ":PROPERTIES:\n"
+                   ":Custom_ID: ${=key=}\n"
+                   ":URL: ${url}\n"
+                   ":AUTHOR: ${author-abbrev}\n"
+                   ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+                   ":NOTER_PAGE: \n"
+                   ":END:\n")
+           :unnarrowed t)))
+)
 (use-package! bibtex-completion
   :config
   (setq bibtex-completion-notes-path "~/org/roam/lit"
