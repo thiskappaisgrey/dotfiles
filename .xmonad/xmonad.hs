@@ -1,72 +1,74 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults -fno-warn-missing-signatures #-}
--- My Xmonad config
-
--- Tried using stack for a little bit but it wasn't a great experience
--- Took up too much space, didn't play well with dante(cus all the hidden packages stuff) and I didn't really understand it
--- Use the cabal+ghcup to install instead. Works great! Maybe also try to make my install a cabal project so I can use custom libraries?
--- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
 
 --- Imports ---
+-- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
+-- Use the cabal+ghcup to install instead. Works great! Maybe also try to make my install a cabal project so I can use custom libraries?
+-- Took up too much space, didn't play well with dante(cus all the hidden packages stuff) and I didn't really understand it
+
+-- Tried using stack for a little bit but it wasn't a great experience
+-- My Xmonad config
 
 -- Base
 import           XMonad
 import           XMonad.Hooks.DynamicLog
-import           XMonad.Hooks.ManageDocks       ( docks
+import           XMonad.Hooks.ManageDocks       ( ToggleStruts(..)
                                                 , avoidStruts
+                                                , docks
                                                 , manageDocks
-                                                , ToggleStruts(..)
                                                 )
 import qualified XMonad.StackSet               as W
 
 -- Layouts
 import           XMonad.Layout.LayoutModifier
-import           XMonad.Layout.Spacing
-import           XMonad.Layout.SimpleFloat
-import           XMonad.Layout.ResizableTile
-import           XMonad.Layout.Renamed          ( renamed
-                                                , Rename(Replace)
-                                                )
+import           XMonad.Layout.Magnifier
 -- Might want to copy Altecration's tabbed layout(combining a web-page with a terminal, useful for web-dev)
 import           XMonad.Layout.NoBorders
-import           XMonad.Layout.Magnifier
+import           XMonad.Layout.Renamed          ( Rename(Replace)
+                                                , renamed
+                                                )
+import           XMonad.Layout.ResizableTile
+import           XMonad.Layout.SimpleFloat
+import           XMonad.Layout.Spacing
 
--- Utils
-import           XMonad.Util.Run                ( spawnPipe
-                                                , runProcessWithInput
-                                                , runInTerm
-                                                )
-import           XMonad.Util.SpawnOnce
+-- import           Control.Arrow                  ( first )
 import           System.IO
-import           XMonad.Util.EZConfig
-import           XMonad.Hooks.EwmhDesktops      ( fullscreenEventHook
-                                                , ewmh
+import           XMonad.Hooks.EwmhDesktops      ( ewmh
+                                                , fullscreenEventHook
                                                 )
-import           XMonad.Util.NamedScratchpad
-import           XMonad.Util.WorkspaceCompare   ( getSortByIndex )
 -- Prompts
 import           XMonad.Prompt
-import           XMonad.Prompt.Input
+import           XMonad.Prompt.ConfirmPrompt
 import           XMonad.Prompt.FuzzyMatch
+import           XMonad.Prompt.Input
 -- import           XMonad.Prompt.Man
 import           XMonad.Prompt.Pass
 import           XMonad.Prompt.Shell            ( shellPrompt )
-import           XMonad.Prompt.ConfirmPrompt
--- import           XMonad.Prompt.Ssh
+import           XMonad.Util.EZConfig
+import           XMonad.Util.NamedScratchpad
+-- Utils
+import           XMonad.Util.Run                ( runInTerm
+                                                , runProcessWithInput
+                                                , spawnPipe
+                                                )
+import           XMonad.Util.SpawnOnce
+import           XMonad.Util.WorkspaceCompare   ( getSortByIndex )
 -- import           XMonad.Prompt.XMonad
--- import           Control.Arrow                  ( first )
+-- import           XMonad.Prompt.Ssh
 
 -- Data
 import           Data.Char                      ( isSpace )
 import           Data.List
 
+import           XMonad.Actions.CycleWS
+import           XMonad.Actions.DynamicProjects
+import           XMonad.Actions.DynamicWorkspaceOrder
+import           XMonad.Actions.Navigation2D
+import           XMonad.Actions.SpawnOn
+import           XMonad.Actions.WithAll         ( killAll )
+import           XMonad.Layout.PerWorkspace     ( onWorkspace )
 -- Actions
 import           XMonad.Util.NamedActions
-import           XMonad.Actions.Navigation2D
-import           XMonad.Actions.DynamicWorkspaceOrder
-import           XMonad.Actions.DynamicProjects
-import           XMonad.Actions.SpawnOn
-import           XMonad.Actions.CycleWS
-import           XMonad.Actions.WithAll         ( killAll )
+
 import           System.Exit
 
 -- Default apps
@@ -90,15 +92,15 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = avoidStruts (tiled ||| simpleFloat ||| full)
+myLayout = onWorkspace wsZoom simpleFloat
+  $ avoidStruts (tiled ||| magnified ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
-  tiled = renamed [Replace "tall"] $ smartBorders $ ResizableTall
-    nmaster
-    delta
-    ratio
-    []
+  tiled = renamed [Replace "tall"] $ smartBorders $ ResizableTall nmaster
+                                                                  delta
+                                                                  ratio
+                                                                  []
    where
         -- The default number of windows in the master pane
     nmaster = 1
@@ -110,11 +112,11 @@ myLayout = avoidStruts (tiled ||| simpleFloat ||| full)
     delta   = 3 / 100
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
-  -- magnified =
-  --   renamed [Replace "magified"] $ smartBorders $ magnifiercz' 1.4 $ Tall
-  --     nmaster
-  --     delta
-  --     ratio
+  magnified =
+    renamed [Replace "magified"] $ smartBorders $ magnifiercz' 1.4 $ Tall
+      nmaster
+      delta
+      ratio
    where
         -- The default number of windows in the master pane
     nmaster = 1
@@ -141,43 +143,38 @@ windowCount =
 -----------------------------------------------------------------
 wsMain = "main"
 wsTerm = "term"
-wsMedia = "media"
+wsZoom = "zoom"
 wsGame = "game"
-wsChat = "chat"
 -- wsVidEdit = "vid-edit"
 -- wsVirt = "virt"
-myWorkspaces = [wsMain, wsTerm, wsMedia, wsChat, wsGame]
+myWorkspaces = [wsMain, wsTerm, wsZoom, wsGame]
 
 myProjects :: [Project]
 myProjects =
-  [ Project { projectName      = wsMain
-            , projectDirectory = "~/"
-            , projectStartHook = Nothing
-            }
+  [ Project
+    { projectName      = wsMain
+    , projectDirectory = "~/"
+    , projectStartHook = Just $ do
+                           spawnOn
+                             wsMain
+                             (myEditor ++ " --eval \"(org-agenda-list)\"")
+    }
   , Project
     { projectName      = wsTerm
     , projectDirectory = "~/code"
-    , projectStartHook =  Just $ do
+    , projectStartHook = Just $ do
                            spawnOn wsTerm myTerminal
                            -- runInTerm "-t ytop" "ytop"
     }
-  , Project
-    { projectName      = wsMedia
-    , projectDirectory = "~/youtube"
-    , projectStartHook = Nothing
-
-    }
+  , Project { projectName      = wsZoom
+            , projectDirectory = "~/.zoom"
+            , projectStartHook = Nothing
+            }
   , Project
     { projectName      = wsGame
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
                            spawnOn wsGame "steam"
-    }
-  , Project
-    { projectName      = wsChat
-    , projectDirectory = "~/"
-    , projectStartHook = Just $ do
-                           spawnOn wsChat "discord"
     }
   ]
 
@@ -189,7 +186,7 @@ calcPrompt :: XPConfig -> String -> X ()
 calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
   where trim' = f . f where f = reverse . dropWhile isSpace
- 
+
 myXPConfig :: XPConfig
 myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , bgColor             = "#2E3440"
@@ -277,9 +274,7 @@ myKeys conf =
   -- NOTE Also don't forget to install: https://github.com/hoyon/mpv-mpris in order to have mpv work with the MPRIS interface
       , ("<XF86AudioPlay>", addName "Play/Pause" $ spawn "playerctl play-pause")
       , ("<XF86AudioPrev>", addName "Prev Song" $ spawn "playerctl prev")
-      , ( "<XF86AudioNext>"
-        , addName "Next Song" $ spawn "playerctl next"
-        )
+      , ("<XF86AudioNext>", addName "Next Song" $ spawn "playerctl next")
   -- BRIGHTNESS
   -- brigntnessctl needs to be installed to work
       , ( "<XF86MonBrightnessUp>"
@@ -297,17 +292,24 @@ myKeys conf =
           exitSuccess
         )
   -- Screenshots
-      , ("C-<Print>", addName "Screenshot" $ spawn "scrot")
+      , ("C-<Print>"  , addName "Screenshot" $ spawn "scrot")
+      , ("C-S-<Print>", addName "Screenshot" $ spawn "scrot -s")
       ]
     ^++^ subKeys
            "Launchers"
-           [ ("M-f"       , addName "Launch Emacs" $ spawn myEditor)
+           [ ("M-f", addName "Launch Emacs" $ spawn myEditor)
+           , ( "M-a"
+             , addName "Launch Agenda"
+               $ spawn (myEditor ++ " --eval \"(org-agenda-list)\"")
+             )
            , ("M-b"       , addName "Launch Brave" $ spawn myBrowser)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
            , ("M-<Space>" , addName "Shell/App Prompt" $ shellPrompt myXPConfig)
-           , ("M-c"       , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture")
-           , ("M-s s"     , addName "Cancel submap" $ return ())
-           , ("M-s M-s"   , addName "Cancel submap" $ return ())
+           , ( "M-c"
+             , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture"
+             )
+           , ("M-s s"  , addName "Cancel submap" $ return ())
+           , ("M-s M-s", addName "Cancel submap" $ return ())
            ]
     ^++^ subKeys
            "Scratchpads"
@@ -324,9 +326,7 @@ myKeys conf =
            ]
     ^++^ subKeys
            "Layouts"
-           [ ( "M-s"
-             , addName "Toggle Struts" $ sendMessage ToggleStruts
-             )         -- Toggles struts
+           [ ("M-s"    , addName "Toggle Struts" $ sendMessage ToggleStruts)         -- Toggles struts
            , ("M-<Tab>", addName "Cycle all layouts" $ sendMessage NextLayout)
            , ( "M-S-<Tab>"
              , addName "Reset layout" $ setLayout $ XMonad.layoutHook conf
@@ -338,17 +338,19 @@ myKeys conf =
             , ( "M-C-c"
               , addName "Kill all" $ confirmPrompt myXPConfig "kill all" killAll
               )
-            , ( "M-["
-              , addName "Shrink Master Area" $ sendMessage Shrink
-              ) -- %! Shrink the master area
-            , ( "M-]"
-              , addName "Expand Master Area" $ sendMessage Expand
-              ) -- %! Expand the master area
+            , ("M-["  , addName "Shrink Master Area" $ sendMessage Shrink) -- %! Shrink the master area
+            , ("M-]"  , addName "Expand Master Area" $ sendMessage Expand) -- %! Expand the master area
               -- Useful for the Full layout
             , ("M-S-j", addName "Next Window" $ windows W.focusUp)
             , ("M-S-k", addName "Prev Window" $ windows W.focusDown)
-            , ("M-m", addName "Focus Master Window" $ windows W.focusMaster)
+            , ("M-m"  , addName "Focus Master Window" $ windows W.focusMaster)
             , ("M-S-m", addName "Swap Master Window" $ windows W.swapMaster)
+            , ( "M-t"
+              , addName "Push windows back into tiling"
+              $ withFocused
+              $ windows
+              . W.sink
+              )
             ]
            ++ zipM' "M-"   "Navigate window" dirKeys   dirs windowGo   True
     -- ++ zipM' "M-S-"               "Move window"                               dirKeys dirs windowSwap True
@@ -380,6 +382,10 @@ myKeys conf =
               , ( "M-S-;"
                 , addName "Shift to Project" $ shiftToProjectPrompt myXPConfig
                 )
+              , ( "M-C-;"
+                , addName "Switch current project Directory"
+                  $ changeProjectDirPrompt myXPConfig
+                )
               , ("M-'"  , addName "Next non-empty WS" nextNonEmptyWS)
               , ("M-S-'", addName "Prev non-empty WS" prevNonEmptyWS)
               ]
@@ -399,9 +405,7 @@ myKeys conf =
            [
   -- Use xmonad-contrib's builtin prompt rather than dmenu
   -- Open applications
-             ( "M-q"
-             , addName "Qalc Prompt" $ calcPrompt myXPConfig "qalc"
-             ) -- example calculator prompt. Also comes with a useful calculator!
+             ("M-q", addName "Qalc Prompt" $ calcPrompt myXPConfig "qalc") -- example calculator prompt. Also comes with a useful calculator!
   -- PASS - the UNIX password manager
            , ("M-p", addName "Get a Password" $ passPrompt myXPConfig)
            , ( "M-S-p"
@@ -440,8 +444,15 @@ myStartupHook = do
   spawnOnce "dunst &"
 
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
+--- nix-shell -p xorg.xwininfo - this program gets the window name!!
 myManageHook :: ManageHook
-myManageHook = namedScratchpadManageHook myScratchPads <+> manageHook def
+myManageHook =
+  composeAll
+      [ title =? "Zoom Cloud Meetings" --> doShift wsZoom
+      , title =? "Zoom - Licensed Account" --> doShift wsZoom
+      ]
+    <+> namedScratchpadManageHook myScratchPads
+    <+> manageHook def
 
 showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
 showKeybindings x = addName "Show Keybindings" $ io $ do

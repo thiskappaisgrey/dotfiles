@@ -412,7 +412,7 @@ schemes:
                         magenta: '0xff46b0'
                         cyan:    '0x59dffc'
                         white:   '0xe6e6d1'
-colors: *base16-gruvbox-dark-hard
+colors: *nord
   # Visual Bell
   #
 # Any time the BEL code is received, Alacritty "rings" the visual bell. Once

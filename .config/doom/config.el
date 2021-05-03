@@ -47,6 +47,7 @@
     (user-mail-address      . "thanatechaumnuaiwit@gmail.com")    ;; only needed for mu < 1.4
     (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
+(add-to-list 'load-path "/run/current-system/sw/share/emacs/site-lisp/mu4e/")
 
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! ispell
@@ -60,7 +61,9 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-material)
+(setq doom-theme 'doom-oceanic-next)
+
+(setq doom-theme 'doom-oceanic-next)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -78,13 +81,14 @@
 
 (after! org
   (setq org-directory "~/org/"
-      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org")
+      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org" "~/org/gtd/habits.org")
       org-re-reveal-root "/home/thanawat/reveal.js/"
       org-export-with-toc nil
       org-hide-emphasis-markers t
       org-log-into-drawer t
       org-log-done 'time
       org-export-with-section-numbers nil)
+  (add-to-list 'org-modules 'org-habit t)
 )
 
 (after! org
@@ -97,12 +101,29 @@
 
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines))
+  (setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "bibtex %b"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   ;; (setq org-latex-listings 'minted
   ;;     org-latex-packages-alist '(("" "minted"))
   ;;     org-latex-pdf-process
   ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   )
+
+(use-package! org-super-agenda
+  :commands (org-super-agenda-mode))
+(after! org-agenda
+  (org-super-agenda-mode))
+
+(setq org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-include-deadlines t
+      org-agenda-block-separator nil
+      org-agenda-tags-column 100 ;; from testing this seems to be a good value
+      org-agenda-compact-blocks t)
 
 (use-package! anki-editor
   :config
@@ -143,7 +164,21 @@
   :init
     (setq org-roam-dailies-directory "daily/"
           org-roam-db-gc-threshold most-positive-fixnum
-           org-id-link-to-org-use-id t))
+           org-id-link-to-org-use-id t)
+  :config
+    (setq org-roam-capture-templates
+        '(("d" "default" plain (function org-roam--capture-get-point)
+           "%?"
+           :file-name "${slug}"
+           :head "#+title: ${title}\n"
+           :immediate-finish t
+           :unnarrowed t)
+          ("p" "private" plain (function org-roam-capture--get-point)
+           "%?"
+           :file-name "private/${slug}"
+           :head "#+title: ${title}\n"
+           :immediate-finish t
+           :unnarrowed t))))
 
 (after! org
   (require 'appt)
@@ -212,13 +247,20 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
-(setq python-shell-interpreter "python3"
-     flycheck-python-pycompile-executable "python3")
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
+(use-package lsp-python-ms
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-python-ms)
+                         (lsp)))
+  :init
+  (setq lsp-python-ms-executable (executable-find "python-language-server")))
 
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
-(map! :map org-present-mode-keymap
+  (map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
         :g [C-left]  #'org-present-prev
         )
@@ -226,6 +268,8 @@
 
 (set-popup-rules!
   '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(display-battery-mode)
 
 (display-battery-mode)
 
@@ -249,7 +293,7 @@
            ""
            :file-name "lit/${slug}"
            :head ,(concat
-                   "#+title:${title}\n"
+                   "${title}\n"
                    "#+roam_key: ${ref}\n\n"
                    "* Notes"
                    ":PROPERTIES:\n"
@@ -268,7 +312,7 @@
         bibtex-completion-pdf-field "file"
         bibtex-completion-notes-template-multiple-files
          (concat
-          "#+title: ${title}\n"
+          "${title}\n"
           "#+roam_key: cite:${=key=}\n"
           "* TODO Notes\n"
           ":PROPERTIES:\n"
@@ -283,8 +327,12 @@
           ":END:\n\n"
           )))
 
-(after! dante
-  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+;; Sets the languagetool java class path to the correct place
+;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
+(setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
+
+;; (after! dante
+;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
 
 ;; Opens video file in mpv
 ;; using openwith for this is a kind of bloated solution, however it works

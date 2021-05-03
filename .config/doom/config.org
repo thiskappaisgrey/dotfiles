@@ -60,6 +60,7 @@ Keep for refrence later..
     (user-mail-address      . "thanatechaumnuaiwit@gmail.com")    ;; only needed for mu < 1.4
     (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
+(add-to-list 'load-path "/run/current-system/sw/share/emacs/site-lisp/mu4e/")
 #+END_SRC
 
 #+RESULTS:
@@ -85,7 +86,7 @@ Keep for refrence later..
 #+END_SRC
 ** Theme
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-material)
+(setq doom-theme 'doom-oceanic-next)
 #+END_SRC
 ** Frame title
 #+BEGIN_SRC elisp
@@ -103,7 +104,7 @@ Keep for refrence later..
 (display-battery-mode)
 #+END_SRC
 
-* Evil
+* Keybindings
 #+BEGIN_SRC elisp
 (setq evil-escape-key-sequence "fd")
 (map! :leader
@@ -115,18 +116,23 @@ Keep for refrence later..
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
 #+END_SRC
+
+#+RESULTS:
+: =rss
+
 * Org
 ** Variables
 #+BEGIN_SRC elisp
 (after! org
   (setq org-directory "~/org/"
-      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org")
+      org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org" "~/org/gtd/habits.org")
       org-re-reveal-root "/home/thanawat/reveal.js/"
       org-export-with-toc nil
       org-hide-emphasis-markers t
       org-log-into-drawer t
       org-log-done 'time
       org-export-with-section-numbers nil)
+  (add-to-list 'org-modules 'org-habit t)
 )
 #+END_SRC
 ** Capture Templates/Other tweaks
@@ -141,6 +147,11 @@ Keep for refrence later..
 
   (require 'ox-extra)
   (ox-extras-activate '(ignore-headlines))
+  (setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "bibtex %b"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   ;; (setq org-latex-listings 'minted
   ;;     org-latex-packages-alist '(("" "minted"))
   ;;     org-latex-pdf-process
@@ -148,6 +159,21 @@ Keep for refrence later..
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   )
 #+END_SRC
+** Super Agenda
+#+begin_src elisp
+(use-package! org-super-agenda
+  :commands (org-super-agenda-mode))
+(after! org-agenda
+  (org-super-agenda-mode))
+
+(setq org-agenda-skip-scheduled-if-done t
+      org-agenda-skip-deadline-if-done t
+      org-agenda-include-deadlines t
+      org-agenda-block-separator nil
+      org-agenda-tags-column 100 ;; from testing this seems to be a good value
+      org-agenda-compact-blocks t)
+
+#+end_src
 
 ** Anki
 #+BEGIN_SRC elisp
@@ -179,6 +205,9 @@ Keep for refrence later..
   (setq mermaid-mmdc-location "~/custom_packages/node_modules/.bin/mmdc"))
 #+END_SRC
 ** Org-roam settings
+:PROPERTIES:
+:ID:       b592ccc5-1997-4dbb-806c-585691a1b575
+:END:
 #+BEGIN_SRC elisp
 ;; (use-package! org-roam-server
 ;;   :ensure t
@@ -194,7 +223,21 @@ Keep for refrence later..
   :init
     (setq org-roam-dailies-directory "daily/"
           org-roam-db-gc-threshold most-positive-fixnum
-           org-id-link-to-org-use-id t))
+           org-id-link-to-org-use-id t)
+  :config
+    (setq org-roam-capture-templates
+        '(("d" "default" plain (function org-roam--capture-get-point)
+           "%?"
+           :file-name "${slug}"
+           :head "#+title: ${title}\n"
+           :immediate-finish t
+           :unnarrowed t)
+          ("p" "private" plain (function org-roam-capture--get-point)
+           "%?"
+           :file-name "private/${slug}"
+           :head "#+title: ${title}\n"
+           :immediate-finish t
+           :unnarrowed t))))
 #+END_SRC
 
 ** Notifications
@@ -256,7 +299,7 @@ Keep for refrence later..
            ""
            :file-name "lit/${slug}"
            :head ,(concat
-                   "#+title:${title}\n"
+                   "${title}\n"
                    "#+roam_key: ${ref}\n\n"
                    "* Notes"
                    ":PROPERTIES:\n"
@@ -275,7 +318,7 @@ Keep for refrence later..
         bibtex-completion-pdf-field "file"
         bibtex-completion-notes-template-multiple-files
          (concat
-          "#+title: ${title}\n"
+          "${title}\n"
           "#+roam_key: cite:${=key=}\n"
           "* TODO Notes\n"
           ":PROPERTIES:\n"
@@ -290,6 +333,13 @@ Keep for refrence later..
           ":END:\n\n"
           )))
 #+end_src
+** Languagetool
+#+begin_src emacs-lisp
+;; Sets the languagetool java class path to the correct place
+;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
+(setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
+#+end_src
+
 * Nov.el
 For reading EPUBs.
 #+BEGIN_SRC elisp
@@ -345,6 +395,13 @@ For reading EPUBs.
 #+BEGIN_SRC elisp
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
+(use-package lsp-python-ms
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-python-ms)
+                         (lsp)))
+  :init
+  (setq lsp-python-ms-executable (executable-find "python-language-server")))
 #+END_SRC
 ** color
 #+BEGIN_SRC elisp
@@ -353,8 +410,8 @@ For reading EPUBs.
 #+END_SRC
 ** haskell(hlint)
 #+BEGIN_SRC emacs-lisp
-(after! dante
-  (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+;; (after! dante
+;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
 #+END_SRC
 * Presentations
 #+BEGIN_SRC elisp

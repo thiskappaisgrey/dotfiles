@@ -1,0 +1,4 @@
+#!/bin/sh
+setxkbmap us,th
+setxkbmap -option "grp:ctrls_toggle"
+setxkbmap -option "ctrl:nocaps"

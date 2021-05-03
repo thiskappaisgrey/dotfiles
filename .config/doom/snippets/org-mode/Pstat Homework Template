@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: Pstat Homework Template
+# key: pstathw
+# --
+#+begin_src latex :results none :file thanawat-hw0$1-pr0$2.png
+\\noindent
+\\textbf{Name: Thanawat \\underline{Techaumnuaiwit} Netid: thanawat@ucsb.edu, TA/Section Time: Hao Li/WED 2pm}\\\\
+\\textbf{Problem $3}   \\\\
+\\begin{flushleft}
+$0
+\\end{flushleft}
+
+#+end_src

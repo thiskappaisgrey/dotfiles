@@ -1,0 +1,3 @@
+#!/bin/sh
+
+mpv --loop-file=inf --stream-buffer-size=2m  "https://radar.weather.gov/lite/N0V/MUX_loop.gif"

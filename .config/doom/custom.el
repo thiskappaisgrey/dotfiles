@@ -4,7 +4,9 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
-   '((org-roam-db-location . "./org-roam.db")
+   '((haskell-process-type . ghci)
+     (dante-repl-command-line "ghci")
+     (org-roam-db-location . "./org-roam.db")
      (org-roam-directory . "."))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

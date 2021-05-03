@@ -1,0 +1,2 @@
+#!/run/current-system/sw/bin/fish
+cat *.org | tr '[:space:]' '\n' | tr  '[:punct:]' '\n' | sort | uniq --count | sort --numeric-sort | less

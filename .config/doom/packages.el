@@ -15,9 +15,6 @@
 ;;(package! org-roam-server)
 ;; (package! ewal)
 ;; (package! ewal-doom-themes)
-;; (package! ob-mermaid)
-(package! mermaid-mode)
-(package! evil-tutor)
 
 ;; Typing Practice
 ;;(package! typing)
@@ -26,6 +23,9 @@
 (package! openwith)
 
 (package! org-ref)
+(package! gotham-theme)
+
+(package! org-super-agenda)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
