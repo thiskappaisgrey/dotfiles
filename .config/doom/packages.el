@@ -26,6 +26,9 @@
 (package! gotham-theme)
 
 (package! org-super-agenda)
+(package! dashboard)
+(package! org-recur)
+(package! scad-mode)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
@@ -51,9 +54,13 @@
 ;; ALPHA
 (package! org-roam-bibtex
   :recipe (:host github :repo "org-roam/org-roam-bibtex"))
+
+(package! kbd-mode
+  :recipe (:host github :repo "kmonad/kbd-mode"))
 ;; NECESARRY for Org-roam-bibtex
 ;; When using org-roam via the `+roam` flag
-(unpin! org-roam company-org-roam)
+(package! org-roam
+  :recipe (:host github :repo "org-roam/org-roam"))
 (unpin! bibtex-completion ivy-bibtex)
 ;; If the package you are trying to install does not contain a PACKAGENAME.el
 ;; file, or is located in a subdirectory of the repo, you'll need to specify

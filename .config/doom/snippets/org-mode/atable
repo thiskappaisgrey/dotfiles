@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: atable
+# key: atable
+# --
+\\renewcommand{\\labelenumi}{\\alph{enumi}}
+\\begin{center}
+\\begin{enumerate}
+\\item $0
+\\end{enumerate}
+\\end{center}

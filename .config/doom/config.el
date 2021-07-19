@@ -61,9 +61,7 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-oceanic-next)
-
-(setq doom-theme 'doom-oceanic-next)
+(setq doom-theme 'doom-nova)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -78,6 +76,22 @@
  ;;Also in visual mode
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+(setq avy-keys '(?a ?s ?e ?t ?g ?y ?n ?i ?o ?h))
+
+(map!
+  :map smartparens-mode-map
+  ;; smartparens maps (navigation ops)
+  :nvie "C-M-f" #'sp-forward-sexp
+  :nvie "C-M-b" #'sp-backward-sexp
+  :nvie "C-M-u" #'sp-backward-up-sexp
+  :nvie "C-M-d" #'sp-down-sexp
+  ;; smartparens maps (split join slurp barf)
+  :nie "M-s" #'sp-split-sexp
+  :nie "M-j" #'sp-join-sexp
+  :nvie "C->" #'sp-forward-slurp-sexp
+  :nvie "C-<" #'sp-forward-barf-sexp
+  :nvie "C-{" #'sp-backward-slurp-sexp
+  :nvie "C-}" #'sp-backward-barf-sexp)
 
 (after! org
   (setq org-directory "~/org/"
@@ -89,12 +103,16 @@
       org-log-done 'time
       org-export-with-section-numbers nil)
   (add-to-list 'org-modules 'org-habit t)
+  (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
+  (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
 )
 
 (after! org
   (setq org-capture-templates
     '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
       ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+      ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
+      ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)
         )
     )
 
@@ -106,6 +124,8 @@
         "bibtex %b"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+ ;;(setq org-latex-packages-alist '(("margin=0.5in" "geometry")))
+  (setq org-latex-packages-alist '(("" "booktabs")))
   ;; (setq org-latex-listings 'minted
   ;;     org-latex-packages-alist '(("" "minted"))
   ;;     org-latex-pdf-process
@@ -114,7 +134,49 @@
   )
 
 (use-package! org-super-agenda
-  :commands (org-super-agenda-mode))
+  :after org-agenda
+  :init
+  (setq org-super-agenda-groups
+        '(;; Each group has an implicit boolean OR operator between its selectors.
+          (:name "Today"  ; Optionally specify section name
+           :time-grid t  ; Items that appear on the time grid
+           :todo "TODAY")  ; Items that have this TODO keyword
+          (:name "Important"
+           :priority "A")
+          ;; Set order of multiple groups at once
+          (:name "Shopping"
+           :tag "shopping")
+        (:name "Recipes"
+         ;; Multiple args given in list with implicit OR
+         :tag ("food"))
+        (:name "Habits"
+         :habit t)
+        (:name "School"
+         :tag "school")
+        (:name "coding"
+         :tag "coding")
+        ;; Groups supply their own section names when none are given
+        (:todo "WAITING" :order 8)  ; Set order of this section
+        (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+         ;; Show this group at the end of the agenda (since it has the
+         ;; highest number). If you specified this group last, items
+         ;; with these todo keywords that e.g. have priority A would be
+         ;; displayed in that group instead, because items are grouped
+         ;; out in the order the groups are listed.
+         :order 9)
+        (:priority<= "B"
+         ;; Show this section after "Today" and "Important", because
+         ;; their order is unspecified, defaulting to 0. Sections
+         ;; are displayed lowest-number-first.
+         :order 1)
+        ;; After the last group, the agenda will display items that didn't
+        ;; match any of these groups, with the default order position of 99
+        ))
+
+:config (org-super-agenda-mode))
+(after! (org-agenda org-super-agenda)
+  (setq! org-super-agenda-header-map (make-sparse-keymap)))
+(map! :leader "a" #'org-agenda)
 (after! org-agenda
   (org-super-agenda-mode))
 
@@ -160,13 +222,35 @@
 ;;         org-roam-server-label-truncate t
 ;;         org-roam-server-label-truncate-length 60
         ;; org-roam-server-label-wrap-length 20))
+
 (use-package! org-roam
   :init
-    (setq org-roam-dailies-directory "daily/"
-          org-roam-db-gc-threshold most-positive-fixnum
-           org-id-link-to-org-use-id t)
+  (map! :leader
+        :prefix "r"
+        :desc "org-roam" "l" #'org-roam-buffer-toggle
+        :desc "org-roam-node-insert" "i" #'org-roam-node-insert
+        :desc "org-roam-node-find" "f" #'org-roam-node-find
+        :desc "org-roam-ref-find" "r" #'org-roam-ref-find
+        :desc "org-roam-show-graph" "g" #'org-roam-show-graph
+        :desc "org-roam-capture" "c" #'org-roam-capture
+        :desc "org-roam-dailies-capture-today" "j" #'org-roam-dailies-capture-today)
+  (setq org-roam-directory (concat org-directory "roam")
+        org-roam-db-gc-threshold most-positive-fixnum
+        org-id-link-to-org-use-id t)
+  (add-to-list 'display-buffer-alist
+               '(("\\*org-roam\\*"
+                  (display-buffer-in-direction)
+                  (direction . right)
+                  (window-width . 0.33)
+                  (window-height . fit-window-to-buffer))))
   :config
-    (setq org-roam-capture-templates
+  (setq org-roam-mode-sections
+        (list #'org-roam-backlinks-insert-section
+              #'org-roam-reflinks-insert-section
+              ;; #'org-roam-unlinked-references-insert-section
+              ))
+  (org-roam-setup)
+  (setq org-roam-capture-templates
         '(("d" "default" plain (function org-roam--capture-get-point)
            "%?"
            :file-name "${slug}"
@@ -178,7 +262,29 @@
            :file-name "private/${slug}"
            :head "#+title: ${title}\n"
            :immediate-finish t
-           :unnarrowed t))))
+           :unnarrowed t)))
+
+  (add-to-list 'org-capture-templates `("c" "org-protocol-capture" entry (file+olp ,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory) "The List")
+                                         "* TO-READ [[%:link][%:description]] %^g"
+                                         :immediate-finish t))
+  (add-to-list 'org-agenda-custom-commands `("r" "Reading"
+                                             ((todo "WRITING"
+                                                    ((org-agenda-overriding-header "Writing")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
+                                              (todo "READING"
+                                                    ((org-agenda-overriding-header "Reading")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
+                                              (todo "TO-READ"
+                                                    ((org-agenda-overriding-header "To Read")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory))))))))
+  (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %?"
+           :if-new (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d>\n"))))
+  ;; (set-company-backend! 'org-mode '(company-capf))
+  )
 
 (after! org
   (require 'appt)
@@ -205,10 +311,6 @@
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
 
-(map! :leader
-      :prefix ("a" . "Personal Kbds")
-      :desc "Add word to dictionary" "w" #'add-word-to-dictionary)
-
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
   :hook (nov-mode . mixed-pitch-mode)
@@ -218,27 +320,28 @@
   (setq nov-text-width t)
   (setq nov-variable-pitch nil))
 
-(use-package! elfeed
-  :config
-    (setq elfeed-search-filter "@1-week-ago +unread +daily")
-    (defun elfeed-v-mpv (url)
-    "Watch a video from URL in MPV"
-    (async-shell-command (format "mpv \"%s\"" url)))
+(after! elfeed
+  (setq elfeed-search-filter "@1-week-ago +unread +daily")
+  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+  )
+(defun elfeed-v-mpv (url)
+  "Watch a video from URL in MPV"
+  (async-shell-command (format "mpv \"%s\"" url)))
 
-    (defun elfeed-view-mpv (&optional use-generic-p)
-    "Youtube-feed link"
-    (interactive "P")
-    (let ((entries (elfeed-search-selected)))
-        (cl-loop for entry in entries
-        do (elfeed-untag entry 'unread)
-        when (elfeed-entry-link entry)
-        do (elfeed-v-mpv it))
-        (mapc #'elfeed-search-update-entry entries)
-        (unless (use-region-p) (forward-line))))
-
-    (define-key elfeed-search-mode-map (kbd "M-v") 'elfeed-view-mpv)
-    (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
-    )
+(defun my/elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+             do (elfeed-untag entry 'unread)
+             when (elfeed-entry-link entry)
+             do (elfeed-v-mpv it))
+    (mapc #'elfeed-search-update-entry entries)
+    (unless (use-region-p) (forward-line))))
+(map! :map elfeed-search-mode-map
+      :after elfeed
+      :g "M-v" #'my/elfeed-view-mpv
+      )
 
 (after! lsp-ui
   (setq lsp-ui-sideline-show-hover t))
@@ -247,20 +350,16 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
- (setq python-shell-interpreter "python3"
+(setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
-(use-package lsp-python-ms
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp)))
+(use-package! lsp-python-ms
   :init
   (setq lsp-python-ms-executable (executable-find "python-language-server")))
 
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 
-  (map! :map org-present-mode-keymap
+(map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
         :g [C-left]  #'org-present-prev
         )
@@ -271,7 +370,24 @@
 
 (display-battery-mode)
 
-(display-battery-mode)
+;; (use-package dashboard
+;;   :init      ;; tweak dashboard config before loading it
+;;   (setq dashboard-set-heading-icons t)
+;;   (setq dashboard-set-file-icons t)
+;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
+;;   (setq dashboard-items '((recents . 5)
+;;                           (agenda . 5 )
+;;                           (bookmarks . 5)
+;;                           (projects . 5)
+;;                           (registers . 5)))
+
+;;   :config
+;;   (dashboard-setup-startup-hook)
+;;   (dashboard-modify-heading-icons '((recents . "file-text")
+;;             (bookmarks . "book")))
+;;   )
 
 (use-package! org-ref
   :after org
@@ -327,12 +443,33 @@
           ":END:\n\n"
           )))
 
+(use-package org-recur
+  :hook ((org-mode . org-recur-mode)
+         (org-agenda-mode . org-recur-agenda-mode))
+  :config
+
+  (setq org-recur-finish-done t
+        org-recur-finish-archive t))
+(map! :map org-recur-mode-map
+        :after org-recur
+        :g "C-c d" #'org-recur-finish)
+
+(map! :map org-recur-agenda-mode-map
+        :after org-recur
+        :g "C-c d" #'org-recur-finish)
+
 ;; Sets the languagetool java class path to the correct place
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
 (setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
 
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+
+(use-package! scad-mode
+  :mode "\\.scad$")
+
+(use-package! kbd-mode
+  :mode ("\\.kbd\\'" . kbd-mode))
 
 ;; Opens video file in mpv
 ;; using openwith for this is a kind of bloated solution, however it works

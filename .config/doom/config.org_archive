@@ -1,0 +1,29 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/thanawat/.config/doom/config.org
+
+
+* DONE Org-recur(for recurring tasks)
+  CLOSED: [2021-06-13 Sun 23:28]
+  :PROPERTIES:
+  :ID:       1b1fc4d8-b8de-4b70-be02-5f32a586c09c
+  :ARCHIVE_TIME: 2021-06-13 Sun 23:28
+  :ARCHIVE_FILE: ~/.config/doom/config.org
+  :ARCHIVE_OLPATH: Org
+  :ARCHIVE_CATEGORY: config
+  :ARCHIVE_TODO: DONE
+  :END:
+#+begin_src emacs-lisp
+(use-package org-recur
+  :hook ((org-mode . org-recur-mode)
+         (org-agenda-mode . org-recur-agenda-mode))
+  :config
+
+  (setq org-recur-finish-done t
+        org-recur-finish-archive t))
+(map! :map org-recur-agenda-mode-map
+        :after org-recur
+        :g "C-c d" #'org-recur-finish)
+#+end_src
+

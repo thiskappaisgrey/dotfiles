@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: geo
+# key: geo
+# --
+#+latex_header: \\usepackage[$0 margin=0.5in]{geometry}

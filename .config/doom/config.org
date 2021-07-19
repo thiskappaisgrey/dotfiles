@@ -1,9 +1,15 @@
 #+TITLE: My Configuration
 #+AUTHOR:  Thanawat Techaumnuaiwit
 * Introduction
+:PROPERTIES:
+:ID:       6706e8e4-30b7-4c1c-b22c-74cc02ab36c0
+:END:
  My Configuration for Doom! Feel free to copy but I probably copy pasted from
  somewhere else. :P
 ** Original Config information:
+:PROPERTIES:
+:ID:       1d6b8ce0-4508-4f32-ba2a-1a58d6c031fa
+:END:
 Keep for refrence later..
 #+BEGIN_SRC elisp
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
@@ -67,12 +73,18 @@ Keep for refrence later..
 
 * Aesthetics
 ** Font
+:PROPERTIES:
+:ID:       4157cc3a-b68f-4bfa-a505-c861a0aef1ee
+:END:
 #+BEGIN_SRC elisp
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! ispell
   (setq ispell-dictionary "en"))
 #+END_SRC
 ** Line Numbers
+:PROPERTIES:
+:ID:       43f34060-24bc-4c33-934f-41f2342529d5
+:END:
 #+BEGIN_SRC elisp
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
@@ -81,30 +93,73 @@ Keep for refrence later..
 (setq visual-fill-column-center-text t)
 #+END_SRC
 ** Start emacs Fullscreen
+:PROPERTIES:
+:ID:       289385f5-168a-46c2-ab02-094053bd3f54
+:END:
 #+BEGIN_SRC elisp
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 #+END_SRC
 ** Theme
+:PROPERTIES:
+:ID:       25875f7e-6058-4876-aca3-a903be7f9300
+:END:
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-oceanic-next)
+(setq doom-theme 'doom-nova)
 #+END_SRC
 ** Frame title
+:PROPERTIES:
+:ID:       56d5dda5-3bd7-40e0-ba33-81c9b06e253c
+:END:
 #+BEGIN_SRC elisp
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
 (setq frame-title-format "%b - Doom Emacs")
 #+END_SRC
 ** Pop-up rules
+:PROPERTIES:
+:ID:       b1ba863f-a0cf-479b-80a5-9d7e00f49090
+:END:
 #+begin_src emacs-lisp
 (set-popup-rules!
   '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
 #+end_src
 ** Modeline
+:PROPERTIES:
+:ID:       1b135ab7-7b90-4d05-ac4c-c1f5a24570ac
+:END:
 #+BEGIN_SRC emacs-lisp
 (display-battery-mode)
 #+END_SRC
 
+* Dashboard
+:PROPERTIES:
+:ID:       b06f3fe0-2639-44e5-bd78-6d7e4e71087b
+:END:
+#+begin_src emacs-lisp
+;; (use-package dashboard
+;;   :init      ;; tweak dashboard config before loading it
+;;   (setq dashboard-set-heading-icons t)
+;;   (setq dashboard-set-file-icons t)
+;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
+;;   (setq dashboard-items '((recents . 5)
+;;                           (agenda . 5 )
+;;                           (bookmarks . 5)
+;;                           (projects . 5)
+;;                           (registers . 5)))
+
+;;   :config
+;;   (dashboard-setup-startup-hook)
+;;   (dashboard-modify-heading-icons '((recents . "file-text")
+;;             (bookmarks . "book")))
+;;   )
+#+end_src
+
 * Keybindings
+:PROPERTIES:
+:ID:       2165d094-6bbd-4ecd-bde5-d80f86f679fc
+:END:
 #+BEGIN_SRC elisp
 (setq evil-escape-key-sequence "fd")
 (map! :leader
@@ -115,13 +170,37 @@ Keep for refrence later..
  ;;Also in visual mode
 ;; (define-key evil-visual-state-map "j" 'evil-next-visual-line)
 ;; (define-key evil-visual-state-map "k" 'evil-previous-visual-line)
+(setq avy-keys '(?a ?s ?e ?t ?g ?y ?n ?i ?o ?h))
 #+END_SRC
-
-#+RESULTS:
-: =rss
-
+** TODO Smartparens
+:PROPERTIES:
+:ID:       7adf680f-bdbf-4664-bd24-39dc9a04d40b
+:END:
+[[https://github.com/Fuco1/smartparens/wiki][More info]] I should really learn to use these if I ever get around to coding lisp.
+#+begin_src elisp
+(map!
+  :map smartparens-mode-map
+  ;; smartparens maps (navigation ops)
+  :nvie "C-M-f" #'sp-forward-sexp
+  :nvie "C-M-b" #'sp-backward-sexp
+  :nvie "C-M-u" #'sp-backward-up-sexp
+  :nvie "C-M-d" #'sp-down-sexp
+  ;; smartparens maps (split join slurp barf)
+  :nie "M-s" #'sp-split-sexp
+  :nie "M-j" #'sp-join-sexp
+  :nvie "C->" #'sp-forward-slurp-sexp
+  :nvie "C-<" #'sp-forward-barf-sexp
+  :nvie "C-{" #'sp-backward-slurp-sexp
+  :nvie "C-}" #'sp-backward-barf-sexp)
+#+end_src
 * Org
+:PROPERTIES:
+:ID:       8fd32456-2d0a-4854-a8e2-9bb3fe133761
+:END:
 ** Variables
+:PROPERTIES:
+:ID:       1aa88483-24e1-4fce-b66e-9e69ed18ea0d
+:END:
 #+BEGIN_SRC elisp
 (after! org
   (setq org-directory "~/org/"
@@ -133,14 +212,21 @@ Keep for refrence later..
       org-log-done 'time
       org-export-with-section-numbers nil)
   (add-to-list 'org-modules 'org-habit t)
+  (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
+  (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
 )
 #+END_SRC
 ** Capture Templates/Other tweaks
+:PROPERTIES:
+:ID:       73268551-1a53-4d97-9fbe-a53b81778ee1
+:END:
 #+BEGIN_SRC elisp
 (after! org
   (setq org-capture-templates
     '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
       ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+      ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
+      ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)
         )
     )
 
@@ -152,6 +238,8 @@ Keep for refrence later..
         "bibtex %b"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+ ;;(setq org-latex-packages-alist '(("margin=0.5in" "geometry")))
+  (setq org-latex-packages-alist '(("" "booktabs")))
   ;; (setq org-latex-listings 'minted
   ;;     org-latex-packages-alist '(("" "minted"))
   ;;     org-latex-pdf-process
@@ -160,9 +248,54 @@ Keep for refrence later..
   )
 #+END_SRC
 ** Super Agenda
+:PROPERTIES:
+:ID:       f6fd9474-6636-4298-a427-83cb5f51aebb
+:END:
 #+begin_src elisp
 (use-package! org-super-agenda
-  :commands (org-super-agenda-mode))
+  :after org-agenda
+  :init
+  (setq org-super-agenda-groups
+        '(;; Each group has an implicit boolean OR operator between its selectors.
+          (:name "Today"  ; Optionally specify section name
+           :time-grid t  ; Items that appear on the time grid
+           :todo "TODAY")  ; Items that have this TODO keyword
+          (:name "Important"
+           :priority "A")
+          ;; Set order of multiple groups at once
+          (:name "Shopping"
+           :tag "shopping")
+        (:name "Recipes"
+         ;; Multiple args given in list with implicit OR
+         :tag ("food"))
+        (:name "Habits"
+         :habit t)
+        (:name "School"
+         :tag "school")
+        (:name "coding"
+         :tag "coding")
+        ;; Groups supply their own section names when none are given
+        (:todo "WAITING" :order 8)  ; Set order of this section
+        (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+         ;; Show this group at the end of the agenda (since it has the
+         ;; highest number). If you specified this group last, items
+         ;; with these todo keywords that e.g. have priority A would be
+         ;; displayed in that group instead, because items are grouped
+         ;; out in the order the groups are listed.
+         :order 9)
+        (:priority<= "B"
+         ;; Show this section after "Today" and "Important", because
+         ;; their order is unspecified, defaulting to 0. Sections
+         ;; are displayed lowest-number-first.
+         :order 1)
+        ;; After the last group, the agenda will display items that didn't
+        ;; match any of these groups, with the default order position of 99
+        ))
+
+:config (org-super-agenda-mode))
+(after! (org-agenda org-super-agenda)
+  (setq! org-super-agenda-header-map (make-sparse-keymap)))
+(map! :leader "a" #'org-agenda)
 (after! org-agenda
   (org-super-agenda-mode))
 
@@ -172,10 +305,12 @@ Keep for refrence later..
       org-agenda-block-separator nil
       org-agenda-tags-column 100 ;; from testing this seems to be a good value
       org-agenda-compact-blocks t)
-
 #+end_src
 
 ** Anki
+:PROPERTIES:
+:ID:       5a793361-943c-40b3-8da2-32bf9c3d7a71
+:END:
 #+BEGIN_SRC elisp
 (use-package! anki-editor
   :config
@@ -195,6 +330,9 @@ Keep for refrence later..
  )
 #+END_SRC
 ** Mermaid
+:PROPERTIES:
+:ID:       4a622d68-9fea-40fe-ad22-00cdd19a88db
+:END:
 #+BEGIN_SRC elisp
 ;; (use-package! ob-mermaid
 ;;   :config
@@ -219,13 +357,35 @@ Keep for refrence later..
 ;;         org-roam-server-label-truncate t
 ;;         org-roam-server-label-truncate-length 60
         ;; org-roam-server-label-wrap-length 20))
+
 (use-package! org-roam
   :init
-    (setq org-roam-dailies-directory "daily/"
-          org-roam-db-gc-threshold most-positive-fixnum
-           org-id-link-to-org-use-id t)
+  (map! :leader
+        :prefix "r"
+        :desc "org-roam" "l" #'org-roam-buffer-toggle
+        :desc "org-roam-node-insert" "i" #'org-roam-node-insert
+        :desc "org-roam-node-find" "f" #'org-roam-node-find
+        :desc "org-roam-ref-find" "r" #'org-roam-ref-find
+        :desc "org-roam-show-graph" "g" #'org-roam-show-graph
+        :desc "org-roam-capture" "c" #'org-roam-capture
+        :desc "org-roam-dailies-capture-today" "j" #'org-roam-dailies-capture-today)
+  (setq org-roam-directory (concat org-directory "roam")
+        org-roam-db-gc-threshold most-positive-fixnum
+        org-id-link-to-org-use-id t)
+  (add-to-list 'display-buffer-alist
+               '(("\\*org-roam\\*"
+                  (display-buffer-in-direction)
+                  (direction . right)
+                  (window-width . 0.33)
+                  (window-height . fit-window-to-buffer))))
   :config
-    (setq org-roam-capture-templates
+  (setq org-roam-mode-sections
+        (list #'org-roam-backlinks-insert-section
+              #'org-roam-reflinks-insert-section
+              ;; #'org-roam-unlinked-references-insert-section
+              ))
+  (org-roam-setup)
+  (setq org-roam-capture-templates
         '(("d" "default" plain (function org-roam--capture-get-point)
            "%?"
            :file-name "${slug}"
@@ -237,10 +397,35 @@ Keep for refrence later..
            :file-name "private/${slug}"
            :head "#+title: ${title}\n"
            :immediate-finish t
-           :unnarrowed t))))
+           :unnarrowed t)))
+
+  (add-to-list 'org-capture-templates `("c" "org-protocol-capture" entry (file+olp ,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory) "The List")
+                                         "* TO-READ [[%:link][%:description]] %^g"
+                                         :immediate-finish t))
+  (add-to-list 'org-agenda-custom-commands `("r" "Reading"
+                                             ((todo "WRITING"
+                                                    ((org-agenda-overriding-header "Writing")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
+                                              (todo "READING"
+                                                    ((org-agenda-overriding-header "Reading")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
+                                              (todo "TO-READ"
+                                                    ((org-agenda-overriding-header "To Read")
+                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory))))))))
+  (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %?"
+           :if-new (file+head "%<%Y-%m-%d>.org"
+                              "#+title: %<%Y-%m-%d>\n"))))
+  ;; (set-company-backend! 'org-mode '(company-capf))
+  )
 #+END_SRC
 
 ** Notifications
+:PROPERTIES:
+:ID:       a355c122-bab3-4691-9544-0e5cd4d1f40b
+:END:
 #+BEGIN_SRC elisp
 (after! org
   (require 'appt)
@@ -266,12 +451,6 @@ Keep for refrence later..
   (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
-#+END_SRC
-** Other mappings
-#+BEGIN_SRC elisp
-(map! :leader
-      :prefix ("a" . "Personal Kbds")
-      :desc "Add word to dictionary" "w" #'add-word-to-dictionary)
 #+END_SRC
 ** Org-ref
 :PROPERTIES:
@@ -333,7 +512,31 @@ Keep for refrence later..
           ":END:\n\n"
           )))
 #+end_src
+** Org-recur(for recurring tasks)
+:PROPERTIES:
+:ID:       1b1fc4d8-b8de-4b70-be02-5f32a586c09c
+:END:
+#+begin_src emacs-lisp
+(use-package org-recur
+  :hook ((org-mode . org-recur-mode)
+         (org-agenda-mode . org-recur-agenda-mode))
+  :config
+
+  (setq org-recur-finish-done t
+        org-recur-finish-archive t))
+(map! :map org-recur-mode-map
+        :after org-recur
+        :g "C-c d" #'org-recur-finish)
+
+(map! :map org-recur-agenda-mode-map
+        :after org-recur
+        :g "C-c d" #'org-recur-finish)
+#+end_src
+
 ** Languagetool
+:PROPERTIES:
+:ID:       e2ca87ef-d217-42d7-9802-96c96af2be09
+:END:
 #+begin_src emacs-lisp
 ;; Sets the languagetool java class path to the correct place
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
@@ -341,6 +544,9 @@ Keep for refrence later..
 #+end_src
 
 * Nov.el
+:PROPERTIES:
+:ID:       239c374f-981f-4cc6-8f68-5f63073a176f
+:END:
 For reading EPUBs.
 #+BEGIN_SRC elisp
 (use-package! nov
@@ -354,37 +560,47 @@ For reading EPUBs.
 #+END_SRC
 
 * Rss(elfeed)
+:PROPERTIES:
+:ID:       3de404f9-c996-49ef-8f80-92c249618646
+:END:
 #+BEGIN_SRC elisp
-(use-package! elfeed
-  :config
-    (setq elfeed-search-filter "@1-week-ago +unread +daily")
-    (defun elfeed-v-mpv (url)
-    "Watch a video from URL in MPV"
-    (async-shell-command (format "mpv \"%s\"" url)))
+(after! elfeed
+  (setq elfeed-search-filter "@1-week-ago +unread +daily")
+  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+  )
+(defun elfeed-v-mpv (url)
+  "Watch a video from URL in MPV"
+  (async-shell-command (format "mpv \"%s\"" url)))
 
-    (defun elfeed-view-mpv (&optional use-generic-p)
-    "Youtube-feed link"
-    (interactive "P")
-    (let ((entries (elfeed-search-selected)))
-        (cl-loop for entry in entries
-        do (elfeed-untag entry 'unread)
-        when (elfeed-entry-link entry)
-        do (elfeed-v-mpv it))
-        (mapc #'elfeed-search-update-entry entries)
-        (unless (use-region-p) (forward-line))))
-
-    (define-key elfeed-search-mode-map (kbd "M-v") 'elfeed-view-mpv)
-    (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
-    )
+(defun my/elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+             do (elfeed-untag entry 'unread)
+             when (elfeed-entry-link entry)
+             do (elfeed-v-mpv it))
+    (mapc #'elfeed-search-update-entry entries)
+    (unless (use-region-p) (forward-line))))
+(map! :map elfeed-search-mode-map
+      :after elfeed
+      :g "M-v" #'my/elfeed-view-mpv
+      )
 #+END_SRC
 * Code
 ** lsp
+:PROPERTIES:
+:ID:       e3392438-559e-491d-8dfd-5ecc0ff00326
+:END:
 #+BEGIN_SRC elisp
 (after! lsp-ui
   (setq lsp-ui-sideline-show-hover t))
 #+END_SRC
 
 ** c
+:PROPERTIES:
+:ID:       115fa39f-a8af-41eb-81ef-a240a610131a
+:END:
 #+BEGIN_SRC elisp
 (after! cc-mode
   (setq c-basic-offset 2)
@@ -392,28 +608,53 @@ For reading EPUBs.
 
 #+END_SRC
 ** python
+:PROPERTIES:
+:ID:       3c82a027-1c98-4eba-b33f-3771a4ace0f1
+:END:
 #+BEGIN_SRC elisp
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
-(use-package lsp-python-ms
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp)))
+(use-package! lsp-python-ms
   :init
   (setq lsp-python-ms-executable (executable-find "python-language-server")))
 #+END_SRC
 ** color
+:PROPERTIES:
+:ID:       d1e1ebd7-34c4-4920-88e9-13a077e62699
+:END:
 #+BEGIN_SRC elisp
 (add-hook! 'rainbow-mode-hook
 (hl-line-mode (if rainbow-mode -1 +1)))
 #+END_SRC
 ** haskell(hlint)
+:PROPERTIES:
+:ID:       289f5481-e1b0-46d8-b109-e4159334d378
+:END:
 #+BEGIN_SRC emacs-lisp
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
 #+END_SRC
+** openscad
+:PROPERTIES:
+:ID:       79714101-02ba-4ed3-a78a-1432a109a30f
+:END:
+#+begin_src emacs-lisp
+(use-package! scad-mode
+  :mode "\\.scad$")
+#+end_src
+** kmonad
+:PROPERTIES:
+:ID:       272b2976-bd99-451e-aec1-82c3c6a62b6a
+:END:
+#+begin_src emacs-lisp
+(use-package! kbd-mode
+  :mode ("\\.kbd\\'" . kbd-mode))
+#+end_src
+
 * Presentations
+:PROPERTIES:
+:ID:       623320c2-057a-4d84-8b42-b411a7b271e5
+:END:
 #+BEGIN_SRC elisp
   (map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
@@ -422,6 +663,9 @@ For reading EPUBs.
 (after! org-tree-slide (setq org-tree-slide-never-touch-face t))
 #+END_SRC
 * Openwith
+:PROPERTIES:
+:ID:       b09c4524-2f5c-4659-8741-6accd88e1ae3
+:END:
 #+BEGIN_SRC emacs-lisp
 ;; Opens video file in mpv
 ;; using openwith for this is a kind of bloated solution, however it works

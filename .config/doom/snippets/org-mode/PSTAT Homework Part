@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: PSTAT Homework Part
-# key: pstathwpart
-# --
-\\textbf{Problem $1 Part $2}   \\\\
-\\begin{flushleft}
-$0
-\\end{flushleft}
