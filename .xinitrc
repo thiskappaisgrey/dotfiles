@@ -1,2 +1,2 @@
-#!/usr/bin/env fish
+#!/bin/sh
 exec /usr/bin/env xmonad

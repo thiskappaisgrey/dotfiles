@@ -9,3 +9,5 @@
 [core]
 	excludesfile = ~/.gitignore-global
 	editor = nvim
+[push]
+	default = simple

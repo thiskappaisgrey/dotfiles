@@ -55,7 +55,7 @@
 
 ;; If you want to change the style of line numbers, change this to `relative' or
 ;; `nil' to disable it:
-(setq display-line-numbers-type 'nil)
+(setq display-line-numbers-type 'relative)
 ;; Makes visual-lines work better
 (setq visual-fill-column-center-text t)
 
@@ -66,6 +66,30 @@
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
 (setq frame-title-format "%b - Doom Emacs")
+
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(display-battery-mode)
+
+;; (use-package dashboard
+;;   :init      ;; tweak dashboard config before loading it
+;;   (setq dashboard-set-heading-icons t)
+;;   (setq dashboard-set-file-icons t)
+;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
+;;   (setq dashboard-items '((recents . 5)
+;;                           (agenda . 5 )
+;;                           (bookmarks . 5)
+;;                           (projects . 5)
+;;                           (registers . 5)))
+
+;;   :config
+;;   (dashboard-setup-startup-hook)
+;;   (dashboard-modify-heading-icons '((recents . "file-text")
+;;             (bookmarks . "book")))
+;;   )
 
 (setq evil-escape-key-sequence "fd")
 (map! :leader
@@ -109,23 +133,50 @@
 
 (after! org
   (setq org-capture-templates
-    '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-      ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-      ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
-      ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)
+        '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+          ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+          ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
+          ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)
+          ;; copied from doom source code
+          ("p" "Templates for projects")
+          ("pt" "Project-local todo" entry  ; {project-root}/todo.org
+           (file+headline +org-capture-project-todo-file "Inbox")
+           "* TODO %?\n%i\n%a" :prepend t)
+          ("pn" "Project-local notes" entry  ; {project-root}/notes.org
+           (file+headline +org-capture-project-notes-file "Inbox")
+           "* %U %?\n%i\n%a" :prepend t)
+          ("pc" "Project-local changelog" entry  ; {project-root}/changelog.org
+           (file+headline +org-capture-project-changelog-file "Unreleased")
+           "* %U %?\n%i\n%a" :prepend t)
+
+          )
         )
+
+  (use-package! ox-extra
+    :config
+    (ox-extras-activate '(ignore-headlines latex-header-blocks))
     )
+  (use-package! ox-latex
+    :init
+    ;; code here will run immediately
+    :config
+    ;; code here will run after the package is loaded
+    (setq org-latex-pdf-process
+          '("pdflatex -interaction nonstopmode -output-directory %o %f"
+            "bibtex %b"
+            "pdflatex -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -interaction nonstopmode -output-directory %o %f"))
+    (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
+    ;; (setq org-latex-prefer-user-labels t)
 
+    ;; deleted unwanted file extensions after latexMK
+    (setq org-latex-logfiles-extensions
+          (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "xmpi" "run.xml" "bcf" "acn" "acr" "alg" "glg" "gls" "ist")))
 
-  (require 'ox-extra)
-  (ox-extras-activate '(ignore-headlines))
-  (setq org-latex-pdf-process
-      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "bibtex %b"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
- ;;(setq org-latex-packages-alist '(("margin=0.5in" "geometry")))
-  (setq org-latex-packages-alist '(("" "booktabs")))
+    (unless (boundp 'org-latex-classes)
+      (setq org-latex-classes nil)))
+  ;;(setq org-latex-packages-alist '(("margin=0.5in" "geometry")))
+  ;; (setq org-latex-packages-alist '(("" "booktabs")))
   ;; (setq org-latex-listings 'minted
   ;;     org-latex-packages-alist '(("" "minted"))
   ;;     org-latex-pdf-process
@@ -155,6 +206,10 @@
          :tag "school")
         (:name "coding"
          :tag "coding")
+
+        (:name "next"
+         :tag "next"
+         :scheduled nil)
         ;; Groups supply their own section names when none are given
         (:todo "WAITING" :order 8)  ; Set order of this section
         (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
@@ -225,58 +280,41 @@
 
 (use-package! org-roam
   :init
-  (map! :leader
-        :prefix "r"
-        :desc "org-roam" "l" #'org-roam-buffer-toggle
-        :desc "org-roam-node-insert" "i" #'org-roam-node-insert
-        :desc "org-roam-node-find" "f" #'org-roam-node-find
-        :desc "org-roam-ref-find" "r" #'org-roam-ref-find
-        :desc "org-roam-show-graph" "g" #'org-roam-show-graph
-        :desc "org-roam-capture" "c" #'org-roam-capture
-        :desc "org-roam-dailies-capture-today" "j" #'org-roam-dailies-capture-today)
-  (setq org-roam-directory (concat org-directory "roam")
-        org-roam-db-gc-threshold most-positive-fixnum
-        org-id-link-to-org-use-id t)
-  (add-to-list 'display-buffer-alist
-               '(("\\*org-roam\\*"
-                  (display-buffer-in-direction)
-                  (direction . right)
-                  (window-width . 0.33)
-                  (window-height . fit-window-to-buffer))))
+  ;; (map! :leader
+  ;;       :prefix "r"
+  ;;       :desc "org-roam" "l" #'org-roam-buffer-toggle
+  ;;       :desc "org-roam-node-insert" "i" #'org-roam-node-insert
+  ;;       :desc "org-roam-node-find" "f" #'org-roam-node-find
+  ;;       :desc "org-roam-ref-find" "r" #'org-roam-ref-find
+  ;;       :desc "org-roam-show-graph" "g" #'org-roam-show-graph
+  ;;       :desc "org-roam-capture" "c" #'org-roam-capture
+  ;;       :desc "org-roam-dailies-capture-today" "j" #'org-roam-dailies-capture-today)
+  ;; (setq org-roam-directory (concat org-directory "roam")
+  ;;       org-roam-db-gc-threshold most-positive-fixnum
+  ;;       org-id-link-to-org-use-id t)
+  ;; (add-to-list 'display-buffer-alist
+  ;;              '(("\\*org-roam\\*"
+  ;;                 (display-buffer-in-direction)
+  ;;                 (direction . right)
+  ;;                 (window-width . 0.33)
+  ;;                 (window-height . fit-window-to-buffer))))
   :config
-  (setq org-roam-mode-sections
-        (list #'org-roam-backlinks-insert-section
-              #'org-roam-reflinks-insert-section
-              ;; #'org-roam-unlinked-references-insert-section
-              ))
-  (org-roam-setup)
+
   (setq org-roam-capture-templates
-        '(("d" "default" plain (function org-roam--capture-get-point)
+        '(("d" "default" plain
            "%?"
-           :file-name "${slug}"
-           :head "#+title: ${title}\n"
-           :immediate-finish t
+           :if-new (file+head "${slug}.org"
+                              "#+title: ${title}\n")
+            :immediate-finish t
            :unnarrowed t)
           ("p" "private" plain (function org-roam-capture--get-point)
            "%?"
-           :file-name "private/${slug}"
-           :head "#+title: ${title}\n"
+           :if-new (file+head "${slug}.org"
+                              "#+title: ${title}\n")
            :immediate-finish t
            :unnarrowed t)))
 
-  (add-to-list 'org-capture-templates `("c" "org-protocol-capture" entry (file+olp ,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory) "The List")
-                                         "* TO-READ [[%:link][%:description]] %^g"
-                                         :immediate-finish t))
-  (add-to-list 'org-agenda-custom-commands `("r" "Reading"
-                                             ((todo "WRITING"
-                                                    ((org-agenda-overriding-header "Writing")
-                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
-                                              (todo "READING"
-                                                    ((org-agenda-overriding-header "Reading")
-                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory)))))
-                                              (todo "TO-READ"
-                                                    ((org-agenda-overriding-header "To Read")
-                                                     (org-agenda-files '(,(expand-file-name "reading_and_writing_inbox.org" org-roam-directory))))))))
+
   (setq org-roam-dailies-directory "daily/")
   (setq org-roam-dailies-capture-templates
         '(("d" "default" entry
@@ -310,84 +348,6 @@
   (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
-
-(use-package! nov
-  :mode ("\\.epub\\'" . nov-mode)
-  :hook (nov-mode . mixed-pitch-mode)
-  :hook (nov-mode . visual-line-mode)
-  :hook (nov-mode . visual-fill-column-mode)
-  :config
-  (setq nov-text-width t)
-  (setq nov-variable-pitch nil))
-
-(after! elfeed
-  (setq elfeed-search-filter "@1-week-ago +unread +daily")
-  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
-  )
-(defun elfeed-v-mpv (url)
-  "Watch a video from URL in MPV"
-  (async-shell-command (format "mpv \"%s\"" url)))
-
-(defun my/elfeed-view-mpv (&optional use-generic-p)
-  "Youtube-feed link"
-  (interactive "P")
-  (let ((entries (elfeed-search-selected)))
-    (cl-loop for entry in entries
-             do (elfeed-untag entry 'unread)
-             when (elfeed-entry-link entry)
-             do (elfeed-v-mpv it))
-    (mapc #'elfeed-search-update-entry entries)
-    (unless (use-region-p) (forward-line))))
-(map! :map elfeed-search-mode-map
-      :after elfeed
-      :g "M-v" #'my/elfeed-view-mpv
-      )
-
-(after! lsp-ui
-  (setq lsp-ui-sideline-show-hover t))
-
-(after! cc-mode
-  (setq c-basic-offset 2)
-  (setq tab-width 2))
-
-(setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
-(use-package! lsp-python-ms
-  :init
-  (setq lsp-python-ms-executable (executable-find "python-language-server")))
-
-(add-hook! 'rainbow-mode-hook
-(hl-line-mode (if rainbow-mode -1 +1)))
-
-(map! :map org-present-mode-keymap
-        :g [C-right] #'org-present-next
-        :g [C-left]  #'org-present-prev
-        )
-(after! org-tree-slide (setq org-tree-slide-never-touch-face t))
-
-(set-popup-rules!
-  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
-
-(display-battery-mode)
-
-;; (use-package dashboard
-;;   :init      ;; tweak dashboard config before loading it
-;;   (setq dashboard-set-heading-icons t)
-;;   (setq dashboard-set-file-icons t)
-;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
-;;   (setq dashboard-items '((recents . 5)
-;;                           (agenda . 5 )
-;;                           (bookmarks . 5)
-;;                           (projects . 5)
-;;                           (registers . 5)))
-
-;;   :config
-;;   (dashboard-setup-startup-hook)
-;;   (dashboard-modify-heading-icons '((recents . "file-text")
-;;             (bookmarks . "book")))
-;;   )
 
 (use-package! org-ref
   :after org
@@ -462,6 +422,58 @@
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
 (setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
 
+(use-package! nov
+  :mode ("\\.epub\\'" . nov-mode)
+  :hook (nov-mode . mixed-pitch-mode)
+  :hook (nov-mode . visual-line-mode)
+  :hook (nov-mode . visual-fill-column-mode)
+  :config
+  (setq nov-text-width t)
+  (setq nov-variable-pitch nil))
+
+(after! elfeed
+  (setq elfeed-search-filter "@1-week-ago +unread +daily")
+  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+  )
+(defun elfeed-v-mpv (url)
+  "Watch a video from URL in MPV"
+  (async-shell-command (format "mpv \"%s\"" url)))
+
+(defun my/elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+             do (elfeed-untag entry 'unread)
+             when (elfeed-entry-link entry)
+             do (elfeed-v-mpv it))
+    (mapc #'elfeed-search-update-entry entries)
+    (unless (use-region-p) (forward-line))))
+(map! :map elfeed-search-mode-map
+      :after elfeed
+      :g "M-v" #'my/elfeed-view-mpv
+      )
+
+(use-package! lsp-ui
+  :config
+  (setq lsp-ui-sideline-show-hover t))
+(use-package! lsp
+  :config
+  (setq lsp-enable-symbol-highlighting 'nil))
+
+(after! cc-mode
+  (setq c-basic-offset 2)
+  (setq tab-width 2))
+
+ (setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
+(use-package! lsp-python-ms
+  :init
+  (setq lsp-python-ms-executable (executable-find "python-language-server")))
+
+(add-hook! 'rainbow-mode-hook
+(hl-line-mode (if rainbow-mode -1 +1)))
+
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
 
@@ -470,6 +482,12 @@
 
 (use-package! kbd-mode
   :mode ("\\.kbd\\'" . kbd-mode))
+
+  (map! :map org-present-mode-keymap
+        :g [C-right] #'org-present-next
+        :g [C-left]  #'org-present-prev
+        )
+(after! org-tree-slide (setq org-tree-slide-never-touch-face t))
 
 ;; Opens video file in mpv
 ;; using openwith for this is a kind of bloated solution, however it works

@@ -1,12 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults -fno-warn-missing-signatures #-}
-
---- Imports ---
--- Instructions to use stack for xmoand https://sitr.us/2018/05/13/build-xmonad-with-stack.html
--- Use the cabal+ghcup to install instead. Works great! Maybe also try to make my install a cabal project so I can use custom libraries?
--- Took up too much space, didn't play well with dante(cus all the hidden packages stuff) and I didn't really understand it
-
--- Tried using stack for a little bit but it wasn't a great experience
 -- My Xmonad config
+--- Imports ---
 
 -- Base
 import           XMonad
@@ -30,6 +24,7 @@ import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.SimpleFloat
 import           XMonad.Layout.Spacing
 
+-- import           XMonad.Prompt.Ssh
 -- import           Control.Arrow                  ( first )
 import           System.IO
 import           XMonad.Hooks.EwmhDesktops      ( ewmh
@@ -37,6 +32,7 @@ import           XMonad.Hooks.EwmhDesktops      ( ewmh
                                                 )
 -- Prompts
 import           XMonad.Prompt
+import           XMonad.Prompt.AppLauncher     as AL
 import           XMonad.Prompt.ConfirmPrompt
 import           XMonad.Prompt.FuzzyMatch
 import           XMonad.Prompt.Input
@@ -53,7 +49,6 @@ import           XMonad.Util.Run                ( runInTerm
 import           XMonad.Util.SpawnOnce
 import           XMonad.Util.WorkspaceCompare   ( getSortByIndex )
 -- import           XMonad.Prompt.XMonad
--- import           XMonad.Prompt.Ssh
 
 -- Data
 import           Data.Char                      ( isSpace )
@@ -73,7 +68,8 @@ import           System.Exit
 
 -- Default apps
 myTerminal = "alacritty"
-myBrowser = "firefox"
+myBrowser = "brave --profile-directory=\"Default\""
+myBrowser2 = "nyxt"
 -- This will start the emacs server if not already started
 myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 
@@ -92,8 +88,8 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = onWorkspace wsZoom simpleFloat
-  $ avoidStruts (tiled ||| magnified ||| full)
+myLayout = onWorkspace wsFloat simpleFloat
+  $ avoidStruts (mirrorTall ||| magnified ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
@@ -124,7 +120,7 @@ myLayout = onWorkspace wsZoom simpleFloat
     delta   = 3 / 100
     -- Default proportion of screen occupied by master pane
     ratio   = 60 / 100
-
+  mirrorTall = Mirror (Tall 2 (3/100) (4/5))
 -- Number of windows in a workspace, not really needed though
 windowCount :: X (Maybe String)
 windowCount =
@@ -143,11 +139,11 @@ windowCount =
 -----------------------------------------------------------------
 wsMain = "main"
 wsTerm = "term"
-wsZoom = "zoom"
+wsFloat = "float"
 wsGame = "game"
 -- wsVidEdit = "vid-edit"
 -- wsVirt = "virt"
-myWorkspaces = [wsMain, wsTerm, wsZoom, wsGame]
+myWorkspaces = [wsMain, wsTerm, wsFloat, wsGame]
 
 myProjects :: [Project]
 myProjects =
@@ -166,8 +162,8 @@ myProjects =
                            spawnOn wsTerm myTerminal
                            -- runInTerm "-t ytop" "ytop"
     }
-  , Project { projectName      = wsZoom
-            , projectDirectory = "~/.zoom"
+  , Project { projectName      = wsFloat
+            , projectDirectory = "~"
             , projectStartHook = Nothing
             }
   , Project
@@ -179,16 +175,13 @@ myProjects =
   ]
 
 
--- calcPrompt requires a cli calculator called qalcualte-gtk.
--- You could use this as a template for other custom prompts that
--- use command line programs that return a single line of output.
 calcPrompt :: XPConfig -> String -> X ()
 calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
   where trim' = f . f where f = reverse . dropWhile isSpace
 
 myXPConfig :: XPConfig
-myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
+myXPConfig = def { font                = "xft:Liberation Mono:size=20"
                  , bgColor             = "#2E3440"
                  , fgColor             = "#D8DEE9"
                  , bgHLight            = "#BF616A"
@@ -197,7 +190,7 @@ myXPConfig = def { font                = "xft:Mononoki Nerd Font:size=16"
                  , promptBorderWidth   = 0
                 -- , position            = Top
                  , position = CenteredAt { xpCenterY = 0.3, xpWidth = 0.5 }
-                 , height              = 20
+                 , height              = 40
                  , historySize         = 256
                  , historyFilter       = id
                  , defaultText         = []
@@ -235,7 +228,7 @@ myKeys conf =
   let
     subKeys str ks = subtitle str : mkNamedKeymap conf ks
     -- screenKeys = ["w", "v", "z"]
-    dirKeys   = ["j", "k", "h", "l"]
+    dirKeys   = ["n", "i", "y", "o"]
     arrowKeys = ["<D>", "<U>", "<L>", "<R>"]
     wsKeys    = map show $ [1 .. 9] ++ [0]
     dirs      = [D, U, L, R]
@@ -302,14 +295,18 @@ myKeys conf =
              , addName "Launch Agenda"
                $ spawn (myEditor ++ " --eval \"(org-agenda-list)\"")
              )
-           , ("M-b"       , addName "Launch Brave" $ spawn myBrowser)
+           , ("M-b"       , addName "Launch My Browser" $ spawn myBrowser)
+           , ("M-S-b"       , addName "Launch My Other Browser" $ spawn myBrowser2)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
            , ("M-<Space>" , addName "Shell/App Prompt" $ shellPrompt myXPConfig)
+           , ("M-S-m", addName "Launch MPV" $ AL.launchApp myXPConfig "mpv")
            , ( "M-c"
              , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture"
              )
            , ("M-s s"  , addName "Cancel submap" $ return ())
            , ("M-s M-s", addName "Cancel submap" $ return ())
+           , ("M-z", addName "Switch to halmak layout" $ spawn "setxkbmap us -variant norman")
+           , ("M-<Backspace>", addName "Switch to qwerty layout" $ spawn "setxkbmap us")
            ]
     ^++^ subKeys
            "Scratchpads"
@@ -319,7 +316,7 @@ myKeys conf =
              , addName "Terminal Scratchpad"
                $ namedScratchpadAction myScratchPads "terminal"
              )
-           , ( "M-S-t"
+           , ( "M-C-t"
              , addName "Htop Scratchpad"
                $ namedScratchpadAction myScratchPads "htop"
              )
@@ -341,10 +338,9 @@ myKeys conf =
             , ("M-["  , addName "Shrink Master Area" $ sendMessage Shrink) -- %! Shrink the master area
             , ("M-]"  , addName "Expand Master Area" $ sendMessage Expand) -- %! Expand the master area
               -- Useful for the Full layout
-            , ("M-S-j", addName "Next Window" $ windows W.focusUp)
-            , ("M-S-k", addName "Prev Window" $ windows W.focusDown)
-            , ("M-m"  , addName "Focus Master Window" $ windows W.focusMaster)
-            , ("M-S-m", addName "Swap Master Window" $ windows W.swapMaster)
+            , ("M-S-"++(dirKeys !! 0), addName "Next Window" $ windows W.focusUp)
+            , ("M-S-"++ (dirKeys !! 1), addName "Prev Window" $ windows W.focusDown)
+            , ("M-m", addName "Swap Master Window" $ windows W.swapMaster)
             , ( "M-t"
               , addName "Push windows back into tiling"
               $ withFocused
@@ -374,6 +370,12 @@ myKeys conf =
                     screenSwap
                     True
            )
+    ^++^ subKeys
+           "Monitors"
+           ( [
+               ("M-,", addName "Next Monitor" nextScreen),
+               ("M-.", addName "Previous Monitor" prevScreen)
+             ] )
     ^++^ subKeys
            "Workspaces"
            (  [ ( "M-;"
@@ -441,18 +443,14 @@ myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "~/.fehbg &"
   spawnOnce "emacs --daemon"
+  spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
+  spawnOnce "caffeine"
   spawnOnce "dunst &"
 
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
 --- nix-shell -p xorg.xwininfo - this program gets the window name!!
 myManageHook :: ManageHook
-myManageHook =
-  composeAll
-      [ title =? "Zoom Cloud Meetings" --> doShift wsZoom
-      , title =? "Zoom - Licensed Account" --> doShift wsZoom
-      ]
-    <+> namedScratchpadManageHook myScratchPads
-    <+> manageHook def
+myManageHook = namedScratchpadManageHook myScratchPads <+> manageHook def
 
 showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
 showKeybindings x = addName "Show Keybindings" $ io $ do
@@ -462,14 +460,17 @@ showKeybindings x = addName "Show Keybindings" $ io $ do
   return ()
 main :: IO ()
 main = do
-  xmproc <- spawnPipe "xmobar ~/.xmonad/xmobars/xmobar-nord.conf"
+  xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
+  xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad
     $ dynamicProjects myProjects
     $ addDescrKeys' ((mod4Mask .|. shiftMask, xK_slash), showKeybindings) myKeys
     $ ewmh
     $ docks def
         { manageHook         = myManageHook <+> manageDocks
-        , logHook = dynamicLogWithPP myPP { ppOutput = hPutStrLn xmproc }
+        , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
+                                                          >> hPutStrLn xmproc1 x
+                                          }
         , startupHook        = myStartupHook
         , terminal           = myTerminal
         , modMask            = mod4Mask

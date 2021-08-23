@@ -4,6 +4,7 @@ extern=HDMI-2
 
 if xrandr | grep "$extern disconnected"; then
     xrandr --output "$extern" --off --output "$intern" --auto
+    pacmd set-card-profile 0 output:analog-stereo+input:analog-stereo
 else
     xrandr --output "$intern" --off --output "$extern" --auto
 fi

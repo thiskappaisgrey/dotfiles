@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# reload the audio modules(and redetects devices). If audio bugs out, try this
+pacmd unload-module module-udev-detect && pacmd load-module module-udev-detect

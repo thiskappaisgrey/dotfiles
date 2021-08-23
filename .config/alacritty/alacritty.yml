@@ -559,8 +559,9 @@ background_opacity: 0.9
 # And optionally:
 #
 # - `mods` (see key bindings)
-#mouse_bindings:
-#  - { mouse: Middle, action: PasteSelection }
+mouse_bindings:
+  - { mouse: Middle, action: PasteSelection }
+  - { mouse: Right, action: Paste }
 
 # Key bindings
 #
@@ -675,7 +676,6 @@ key_bindings:
   - { key: NumpadAdd,      mods: Control,       action: IncreaseFontSize }
   - { key: NumpadSubtract, mods: Control,       action: DecreaseFontSize }
   - { key: Minus,    mods: Control,       action: DecreaseFontSize }
-
   # (Windows only)
   #- { key: Return,   mods: Alt,           action: ToggleFullscreen }
 
