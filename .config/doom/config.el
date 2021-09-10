@@ -48,6 +48,7 @@
     (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
 (add-to-list 'load-path "/run/current-system/sw/share/emacs/site-lisp/mu4e/")
+(setq enable-local-variables t)
 
 (setq doom-font (font-spec :family "Hasklug Nerd Font Mono" :size 18))
 (after! ispell
@@ -61,35 +62,11 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-nova)
+(setq doom-theme 'doom-nord)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
 (setq frame-title-format "%b - Doom Emacs")
-
-(set-popup-rules!
-  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
-
-(display-battery-mode)
-
-;; (use-package dashboard
-;;   :init      ;; tweak dashboard config before loading it
-;;   (setq dashboard-set-heading-icons t)
-;;   (setq dashboard-set-file-icons t)
-;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
-;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
-;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
-;;   (setq dashboard-items '((recents . 5)
-;;                           (agenda . 5 )
-;;                           (bookmarks . 5)
-;;                           (projects . 5)
-;;                           (registers . 5)))
-
-;;   :config
-;;   (dashboard-setup-startup-hook)
-;;   (dashboard-modify-heading-icons '((recents . "file-text")
-;;             (bookmarks . "book")))
-;;   )
 
 (setq evil-escape-key-sequence "fd")
 (map! :leader
@@ -316,6 +293,7 @@
 
 
   (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-db-location (expand-file-name "roam/org-roam.db" org-directory))
   (setq org-roam-dailies-capture-templates
         '(("d" "default" entry
            "* %?"
@@ -348,6 +326,88 @@
   (run-at-time "24:01" 3600 'org-agenda-to-appt)           ;; update appt list hourly
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
+
+(use-package! nov
+  :mode ("\\.epub\\'" . nov-mode)
+  :hook (nov-mode . mixed-pitch-mode)
+  :hook (nov-mode . visual-line-mode)
+  :hook (nov-mode . visual-fill-column-mode)
+  :config
+  (setq nov-text-width t)
+  (setq nov-variable-pitch nil))
+
+(after! elfeed
+  (setq elfeed-search-filter "@1-week-ago +unread +daily")
+  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
+  )
+(defun elfeed-v-mpv (url)
+  "Watch a video from URL in MPV"
+  (async-shell-command (format "mpv \"%s\"" url)))
+
+(defun my/elfeed-view-mpv (&optional use-generic-p)
+  "Youtube-feed link"
+  (interactive "P")
+  (let ((entries (elfeed-search-selected)))
+    (cl-loop for entry in entries
+             do (elfeed-untag entry 'unread)
+             when (elfeed-entry-link entry)
+             do (elfeed-v-mpv it))
+    (mapc #'elfeed-search-update-entry entries)
+    (unless (use-region-p) (forward-line))))
+(map! :map elfeed-search-mode-map
+      :after elfeed
+      :g "M-v" #'my/elfeed-view-mpv
+      )
+
+(use-package! lsp-ui
+  :config
+  (setq lsp-ui-sideline-show-hover t))
+(use-package! lsp
+  :config
+  (setq lsp-enable-symbol-highlighting 'nil))
+
+(after! cc-mode
+  (setq c-basic-offset 2)
+  (setq tab-width 2))
+
+(setq python-shell-interpreter "python3"
+      flycheck-python-pycompile-executable "python3")
+(use-package! lsp-python-ms
+  :init
+  (setq lsp-python-ms-executable (executable-find "python-language-server")))
+
+(add-hook! 'rainbow-mode-hook
+(hl-line-mode (if rainbow-mode -1 +1)))
+
+(map! :map org-present-mode-keymap
+        :g [C-right] #'org-present-next
+        :g [C-left]  #'org-present-prev
+        )
+(after! org-tree-slide (setq org-tree-slide-never-touch-face t))
+
+(set-popup-rules!
+  '(("^\\*info\\*" :slot 2 :side left :width 85 :quit nil)))
+
+(display-battery-mode)
+
+;; (use-package dashboard
+;;   :init      ;; tweak dashboard config before loading it
+;;   (setq dashboard-set-heading-icons t)
+;;   (setq dashboard-set-file-icons t)
+;;   (setq dashboard-banner-logo-title "Emacs Is More Than A Text Editor!")
+;;   (setq dashboard-startup-banner 'logo) ;; use standard emacs logo as banner
+;;   (setq dashboard-center-content nil) ;; set to 't' for centered content
+;;   (setq dashboard-items '((recents . 5)
+;;                           (agenda . 5 )
+;;                           (bookmarks . 5)
+;;                           (projects . 5)
+;;                           (registers . 5)))
+
+;;   :config
+;;   (dashboard-setup-startup-hook)
+;;   (dashboard-modify-heading-icons '((recents . "file-text")
+;;             (bookmarks . "book")))
+;;   )
 
 (use-package! org-ref
   :after org
@@ -422,72 +482,17 @@
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
 (setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
 
-(use-package! nov
-  :mode ("\\.epub\\'" . nov-mode)
-  :hook (nov-mode . mixed-pitch-mode)
-  :hook (nov-mode . visual-line-mode)
-  :hook (nov-mode . visual-fill-column-mode)
-  :config
-  (setq nov-text-width t)
-  (setq nov-variable-pitch nil))
-
-(after! elfeed
-  (setq elfeed-search-filter "@1-week-ago +unread +daily")
-  (add-hook! 'elfeed-search-mode-hook 'elfeed-update)
-  )
-(defun elfeed-v-mpv (url)
-  "Watch a video from URL in MPV"
-  (async-shell-command (format "mpv \"%s\"" url)))
-
-(defun my/elfeed-view-mpv (&optional use-generic-p)
-  "Youtube-feed link"
-  (interactive "P")
-  (let ((entries (elfeed-search-selected)))
-    (cl-loop for entry in entries
-             do (elfeed-untag entry 'unread)
-             when (elfeed-entry-link entry)
-             do (elfeed-v-mpv it))
-    (mapc #'elfeed-search-update-entry entries)
-    (unless (use-region-p) (forward-line))))
-(map! :map elfeed-search-mode-map
-      :after elfeed
-      :g "M-v" #'my/elfeed-view-mpv
-      )
-
-(use-package! lsp-ui
-  :config
-  (setq lsp-ui-sideline-show-hover t))
-(use-package! lsp
-  :config
-  (setq lsp-enable-symbol-highlighting 'nil))
-
-(after! cc-mode
-  (setq c-basic-offset 2)
-  (setq tab-width 2))
-
- (setq python-shell-interpreter "python3"
-      flycheck-python-pycompile-executable "python3")
-(use-package! lsp-python-ms
-  :init
-  (setq lsp-python-ms-executable (executable-find "python-language-server")))
-
-(add-hook! 'rainbow-mode-hook
-(hl-line-mode (if rainbow-mode -1 +1)))
-
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+(use-package! lsp-haskell
+  :config
+  (setq lsp-haskell-server-path "haskell-language-server"))
 
 (use-package! scad-mode
   :mode "\\.scad$")
 
 (use-package! kbd-mode
   :mode ("\\.kbd\\'" . kbd-mode))
-
-  (map! :map org-present-mode-keymap
-        :g [C-right] #'org-present-next
-        :g [C-left]  #'org-present-prev
-        )
-(after! org-tree-slide (setq org-tree-slide-never-touch-face t))
 
 ;; Opens video file in mpv
 ;; using openwith for this is a kind of bloated solution, however it works

@@ -141,6 +141,7 @@ wsMain = "main"
 wsTerm = "term"
 wsFloat = "float"
 wsGame = "game"
+wsMusic = "music"
 -- wsVidEdit = "vid-edit"
 -- wsVirt = "virt"
 myWorkspaces = [wsMain, wsTerm, wsFloat, wsGame]
@@ -171,6 +172,12 @@ myProjects =
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
                            spawnOn wsGame "steam"
+    }
+  , Project
+    { projectName      = wsMusic
+    , projectDirectory = "~/"
+    , projectStartHook = Just $ do
+                           spawnOn wsMusic "brave --profile-directory=\"youtube\""
     }
   ]
 
@@ -374,7 +381,9 @@ myKeys conf =
            "Monitors"
            ( [
                ("M-,", addName "Next Monitor" nextScreen),
-               ("M-.", addName "Previous Monitor" prevScreen)
+               ("M-.", addName "Previous Monitor" prevScreen),
+               ("M-S-,", addName "Previous Monitor" swapNextScreen),
+               ("M-S-.", addName "Previous Monitor" swapPrevScreen)
              ] )
     ^++^ subKeys
            "Workspaces"

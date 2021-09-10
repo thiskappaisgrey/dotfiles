@@ -67,6 +67,7 @@ Keep for refrence later..
     (mu4e-compose-signature . "You can find me at https://thanawat.xyz\n---\nThanawat Techaumnuaiwit"))
   nil)
 (add-to-list 'load-path "/run/current-system/sw/share/emacs/site-lisp/mu4e/")
+(setq enable-local-variables t)
 #+END_SRC
 
 #+RESULTS:
@@ -104,7 +105,7 @@ Keep for refrence later..
 :ID:       25875f7e-6058-4876-aca3-a903be7f9300
 :END:
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-nova)
+(setq doom-theme 'doom-nord)
 #+END_SRC
 ** Frame title
 :PROPERTIES:
@@ -427,6 +428,7 @@ Keep for refrence later..
 
 
   (setq org-roam-dailies-directory "daily/")
+  (setq org-roam-db-location (expand-file-name "roam/org-roam.db" org-directory))
   (setq org-roam-dailies-capture-templates
         '(("d" "default" entry
            "* %?"
@@ -652,6 +654,9 @@ For reading EPUBs.
 #+BEGIN_SRC emacs-lisp
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
+(use-package! lsp-haskell
+  :config
+  (setq lsp-haskell-server-path "haskell-language-server"))
 #+END_SRC
 ** openscad
 :PROPERTIES:
