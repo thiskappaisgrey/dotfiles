@@ -22,13 +22,15 @@
 (package! typit)
 (package! openwith)
 
-(package! org-ref)
+;; (package! org-ref)
 (package! gotham-theme)
 
 (package! org-super-agenda)
 (package! dashboard)
 (package! org-recur)
 (package! scad-mode)
+
+(package! ein)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
@@ -52,8 +54,8 @@
 (package! org-roam-server
   :recipe (:host github :repo "org-roam/org-roam-server"))
 ;; ALPHA
-(package! org-roam-bibtex
-  :recipe (:host github :repo "org-roam/org-roam-bibtex"))
+;; (package! org-roam-bibtex
+;;   :recipe (:host github :repo "org-roam/org-roam-bibtex"))
 
 (package! kbd-mode
   :recipe (:host github :repo "kmonad/kbd-mode"))

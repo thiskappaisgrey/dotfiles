@@ -89,7 +89,7 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 -----------------------------------------------------------------
 
 myLayout = onWorkspace wsFloat simpleFloat
-  $ avoidStruts (mirrorTall ||| magnified ||| full)
+  $ avoidStruts (mirrorTall ||| mirrorTall2 ||| magnified ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
@@ -120,7 +120,8 @@ myLayout = onWorkspace wsFloat simpleFloat
     delta   = 3 / 100
     -- Default proportion of screen occupied by master pane
     ratio   = 60 / 100
-  mirrorTall = Mirror (Tall 2 (3/100) (4/5))
+  mirrorTall = Mirror (Tall 1 (3/100) (4/5))
+  mirrorTall2 = Mirror (Tall 2 (3/100) (4/5))
 -- Number of windows in a workspace, not really needed though
 windowCount :: X (Maybe String)
 windowCount =
@@ -293,7 +294,7 @@ myKeys conf =
         )
   -- Screenshots
       , ("C-<Print>"  , addName "Screenshot" $ spawn "scrot")
-      , ("C-S-<Print>", addName "Screenshot" $ spawn "scrot -s")
+      , ("C-S-<Print>", addName "Screenshot" $ spawn "scrot -a $(slop -f '%x,%y,%w,%h')")
       ]
     ^++^ subKeys
            "Launchers"
@@ -452,8 +453,11 @@ myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "~/.fehbg &"
   spawnOnce "emacs --daemon"
-  spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
-  spawnOnce "caffeine"
+  -- spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
+  spawnOnce "status-notifier-watcher &"
+  spawnOnce "taffybar &"
+  -- spawnOnce "caffeine &"
+  -- spawnOnce "flameshot &"
   spawnOnce "dunst &"
 
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
@@ -469,17 +473,17 @@ showKeybindings x = addName "Show Keybindings" $ io $ do
   return ()
 main :: IO ()
 main = do
-  xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
-  xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
+  -- xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
+  -- xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad
     $ dynamicProjects myProjects
     $ addDescrKeys' ((mod4Mask .|. shiftMask, xK_slash), showKeybindings) myKeys
     $ ewmh
     $ docks def
         { manageHook         = myManageHook <+> manageDocks
-        , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
-                                                          >> hPutStrLn xmproc1 x
-                                          }
+        -- , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
+        --                                                   >> hPutStrLn xmproc1 x
+                                          -- }
         , startupHook        = myStartupHook
         , terminal           = myTerminal
         , modMask            = mod4Mask

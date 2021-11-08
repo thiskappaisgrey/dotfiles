@@ -62,7 +62,7 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-nord)
+(setq doom-theme 'doom-one)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -139,10 +139,10 @@
     :config
     ;; code here will run after the package is loaded
     (setq org-latex-pdf-process
-          '("pdflatex -interaction nonstopmode -output-directory %o %f"
+          '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
             "bibtex %b"
-            "pdflatex -interaction nonstopmode -output-directory %o %f"
-            "pdflatex -interaction nonstopmode -output-directory %o %f"))
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
     (setq org-latex-with-hyperref nil) ;; stop org adding hypersetup{author..} to latex export
     ;; (setq org-latex-prefer-user-labels t)
 
@@ -154,8 +154,8 @@
       (setq org-latex-classes nil)))
   ;;(setq org-latex-packages-alist '(("margin=0.5in" "geometry")))
   ;; (setq org-latex-packages-alist '(("" "booktabs")))
-  ;; (setq org-latex-listings 'minted
-  ;;     org-latex-packages-alist '(("" "minted"))
+  (setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted")))
   ;;     org-latex-pdf-process
   ;;     '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
   ;;       "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
@@ -174,40 +174,65 @@
           ;; Set order of multiple groups at once
           (:name "Shopping"
            :tag "shopping")
-        (:name "Recipes"
-         ;; Multiple args given in list with implicit OR
-         :tag ("food"))
-        (:name "Habits"
-         :habit t)
-        (:name "School"
-         :tag "school")
-        (:name "coding"
-         :tag "coding")
+          (:name "Recipes"
+           ;; Multiple args given in list with implicit OR
+           :tag ("food"))
+          (:name "Habits"
+           :habit t)
+          (:name "School"
+           :tag "school")
+          (:name "coding"
+           :tag "coding")
 
-        (:name "next"
-         :tag "next"
-         :scheduled nil)
-        ;; Groups supply their own section names when none are given
-        (:todo "WAITING" :order 8)  ; Set order of this section
-        (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
-         ;; Show this group at the end of the agenda (since it has the
-         ;; highest number). If you specified this group last, items
-         ;; with these todo keywords that e.g. have priority A would be
-         ;; displayed in that group instead, because items are grouped
-         ;; out in the order the groups are listed.
-         :order 9)
-        (:priority<= "B"
-         ;; Show this section after "Today" and "Important", because
-         ;; their order is unspecified, defaulting to 0. Sections
-         ;; are displayed lowest-number-first.
-         :order 1)
-        ;; After the last group, the agenda will display items that didn't
-        ;; match any of these groups, with the default order position of 99
-        ))
+          (:name "next"
+           :tag "next"
+           :scheduled nil)
+          ;; Groups supply their own section names when none are given
+          (:todo "WAITING" :order 8)  ; Set order of this section
+          (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+           ;; Show this group at the end of the agenda (since it has the
+           ;; highest number). If you specified this group last, items
+           ;; with these todo keywords that e.g. have priority A would be
+           ;; displayed in that group instead, because items are grouped
+           ;; out in the order the groups are listed.
+           :order 9)
+          (:priority<= "B"
+           ;; Show this section after "Today" and "Important", because
+           ;; their order is unspecified, defaulting to 0. Sections
+           ;; are displayed lowest-number-first.
+           :order 1)
+          ;; After the last group, the agenda will display items that didn't
+          ;; match any of these groups, with the default order position of 99
+          ))
 
-:config (org-super-agenda-mode))
+  :config (org-super-agenda-mode))
 (after! (org-agenda org-super-agenda)
-  (setq! org-super-agenda-header-map (make-sparse-keymap)))
+  (setq! org-super-agenda-header-map (make-sparse-keymap))
+  (setq! org-agenda-custom-commands '(("h" "my custom agenda view"
+                                       ((alltodo "" ((org-agenda-overriding-header "")
+                                                     (org-super-agenda-groups
+                                                      '(
+                                                        (:name "Projects"
+                                                         :todo "PROJ"
+                                                         :children t
+                                                         :order 1)
+                                                        (:name "To Process"
+                                                         :file-path "inbox\\.org"
+                                                         :order 2)
+                                                        (:name "School"
+                                                         :tag "school"
+                                                         :order 3)
+                                                        (:order-multi (2 (:name "Shopping for Food items"
+                                                                          ;; Boolean AND group matches items that match all subgroups
+                                                                          :and (:tag "shopping"))
+                                                                         (:name "Food and cooking"
+                                                                          ;; Multiple args given in list with implicit OR
+                                                                          :tag ("food" "cooking"))))
+                                                        (:discard (:anything t))
+                                                        )))))
+                                       )))
+
+  )
 (map! :leader "a" #'org-agenda)
 (after! org-agenda
   (org-super-agenda-mode))
@@ -282,6 +307,14 @@
            "%?"
            :if-new (file+head "${slug}.org"
                               "#+title: ${title}\n")
+            :immediate-finish t
+           :unnarrowed t)
+          ("l" "lit" entry
+           "* %?"
+           :if-new (file+head "lit/${slug}.org"
+                              "#+title: ${title}\n")
+            :clock-in
+            :clock-keep
             :immediate-finish t
            :unnarrowed t)
           ("p" "private" plain (function org-roam-capture--get-point)
@@ -409,59 +442,59 @@
 ;;             (bookmarks . "book")))
 ;;   )
 
-(use-package! org-ref
-  :after org
-  :config
-  (setq org-ref-completion-library 'org-ref-ivy-cite
-    org-ref-default-bibliography `,(list (concat org-directory "roam/biblio.bib"))
-    reftex-default-bibliography  `,(list (concat org-directory "roam/biblio.bib")))
-  )
-(use-package! org-roam-bibtex
-  :after org-roam
+;; (use-package! org-ref
+;;   :after org
+;;   :config
+;;   (setq org-ref-completion-library 'org-ref-ivy-cite
+;;     org-ref-default-bibliography `,(list (concat org-directory "roam/biblio.bib"))
+;;     reftex-default-bibliography  `,(list (concat org-directory "roam/biblio.bib")))
+;;   )
+;; (use-package! org-roam-bibtex
+;;   :after org-roam
 
-  :hook (org-roam-mode . org-roam-bibtex-mode)
-  :config
-  (setq org-roam-bibtex-preformat-keywords
-   '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+;;   :hook (org-roam-mode . org-roam-bibtex-mode)
+;;   :config
+;;   (setq org-roam-bibtex-preformat-keywords
+;;    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
 
-  (setq orb-templates
-        `(("r" "ref" plain (function org-roam-capture--get-point)
-           ""
-           :file-name "lit/${slug}"
-           :head ,(concat
-                   "${title}\n"
-                   "#+roam_key: ${ref}\n\n"
-                   "* Notes"
-                   ":PROPERTIES:\n"
-                   ":Custom_ID: ${=key=}\n"
-                   ":URL: ${url}\n"
-                   ":AUTHOR: ${author-abbrev}\n"
-                   ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-                   ":NOTER_PAGE: \n"
-                   ":END:\n")
-           :unnarrowed t)))
-)
-(use-package! bibtex-completion
-  :config
-  (setq bibtex-completion-notes-path "~/org/roam/lit"
-        bibtex-completion-bibliography "~/org/roam/biblio.bib"
-        bibtex-completion-pdf-field "file"
-        bibtex-completion-notes-template-multiple-files
-         (concat
-          "${title}\n"
-          "#+roam_key: cite:${=key=}\n"
-          "* TODO Notes\n"
-          ":PROPERTIES:\n"
-          ":Custom_ID: ${=key=}\n"
-          ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-          ":AUTHOR: ${author-abbrev}\n"
-          ":JOURNAL: ${journaltitle}\n"
-          ":DATE: ${date}\n"
-          ":YEAR: ${year}\n"
-          ":DOI: ${doi}\n"
-          ":URL: ${url}\n"
-          ":END:\n\n"
-          )))
+;;   (setq orb-templates
+;;         `(("r" "ref" plain (function org-roam-capture--get-point)
+;;            ""
+;;            :file-name "lit/${slug}"
+;;            :head ,(concat
+;;                    "${title}\n"
+;;                    "#+roam_key: ${ref}\n\n"
+;;                    "* Notes"
+;;                    ":PROPERTIES:\n"
+;;                    ":Custom_ID: ${=key=}\n"
+;;                    ":URL: ${url}\n"
+;;                    ":AUTHOR: ${author-abbrev}\n"
+;;                    ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+;;                    ":NOTER_PAGE: \n"
+;;                    ":END:\n")
+;;            :unnarrowed t)))
+;; )
+;; (use-package! bibtex-completion
+;;   :config
+;;   (setq bibtex-completion-notes-path "~/org/roam/lit"
+;;         bibtex-completion-bibliography "~/org/roam/biblio.bib"
+;;         bibtex-completion-pdf-field "file"
+;;         bibtex-completion-notes-template-multiple-files
+;;          (concat
+;;           "${title}\n"
+;;           "#+roam_key: cite:${=key=}\n"
+;;           "* TODO Notes\n"
+;;           ":PROPERTIES:\n"
+;;           ":Custom_ID: ${=key=}\n"
+;;           ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+;;           ":AUTHOR: ${author-abbrev}\n"
+;;           ":JOURNAL: ${journaltitle}\n"
+;;           ":DATE: ${date}\n"
+;;           ":YEAR: ${year}\n"
+;;           ":DOI: ${doi}\n"
+;;           ":URL: ${url}\n"
+;;           ":END:\n\n"
+;;           )))
 
 (use-package org-recur
   :hook ((org-mode . org-recur-mode)
