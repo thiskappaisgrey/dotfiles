@@ -453,11 +453,11 @@ myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "~/.fehbg &"
   spawnOnce "emacs --daemon"
-  -- spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
-  spawnOnce "status-notifier-watcher &"
-  spawnOnce "taffybar &"
-  -- spawnOnce "caffeine &"
-  -- spawnOnce "flameshot &"
+  spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
+  -- spawnOnce "status-notifier-watcher &"
+  -- spawnOnce "taffybar &"
+  spawnOnce "caffeine &"
+  spawnOnce "flameshot &"
   spawnOnce "dunst &"
 
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
@@ -473,17 +473,17 @@ showKeybindings x = addName "Show Keybindings" $ io $ do
   return ()
 main :: IO ()
 main = do
-  -- xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
-  -- xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
+  xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
+  xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad
     $ dynamicProjects myProjects
     $ addDescrKeys' ((mod4Mask .|. shiftMask, xK_slash), showKeybindings) myKeys
     $ ewmh
     $ docks def
         { manageHook         = myManageHook <+> manageDocks
-        -- , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
-        --                                                   >> hPutStrLn xmproc1 x
-                                          -- }
+        , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
+                                                          >> hPutStrLn xmproc1 x
+                                          }
         , startupHook        = myStartupHook
         , terminal           = myTerminal
         , modMask            = mod4Mask

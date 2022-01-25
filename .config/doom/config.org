@@ -642,12 +642,12 @@ For reading EPUBs.
 :ID:       e3392438-559e-491d-8dfd-5ecc0ff00326
 :END:
 #+BEGIN_SRC elisp
-(use-package! lsp-ui
-  :config
-  (setq lsp-ui-sideline-show-hover t))
-(use-package! lsp
-  :config
-  (setq lsp-enable-symbol-highlighting 'nil))
+;;(use-package! lsp-ui
+ ;; :config
+  ;;(setq lsp-ui-sideline-show-hover t))
+;; (use-package! lsp
+;;  :config
+;;   (setq lsp-enable-symbol-highlighting 'nil))
 
 #+END_SRC
 
@@ -668,9 +668,9 @@ For reading EPUBs.
 #+BEGIN_SRC elisp
  (setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
-(use-package! lsp-python-ms
-  :init
-  (setq lsp-python-ms-executable (executable-find "python-language-server")))
+;;(use-package! lsp-python-ms
+  ;;:init
+  ;;(setq lsp-python-ms-executable (executable-find "python-language-server")))
 #+END_SRC
 ** color
 :PROPERTIES:
@@ -687,9 +687,9 @@ For reading EPUBs.
 #+BEGIN_SRC emacs-lisp
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-(use-package! lsp-haskell
-  :config
-  (setq lsp-haskell-server-path "haskell-language-server"))
+;;(use-package! lsp-haskell
+  ;;:config
+  ;;(setq lsp-haskell-server-path "haskell-language-server"))
 #+END_SRC
 ** openscad
 :PROPERTIES:

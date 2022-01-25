@@ -1,3 +1,3 @@
 #!/usr/bin/env fish
 xrandr --output HDMI-2 --auto --set audio on
-pacmd set-card-profile 0 output:hdmi-surround-extra1
+pactl set-card-profile alsa_card.pci-0000_00_1f.3 output:hdmi-surround-extra1

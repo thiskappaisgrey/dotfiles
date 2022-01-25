@@ -26,6 +26,13 @@
     package = pkgs.gnome3.adwaita-icon-theme;
     name = "Adwaita";
   };
+  services.picom = {
+    enable = true;
+    fade = true;
+    vSync = true;
+    experimentalBackends = true;
+    fadeDelta = 5;
+  };
   # TODO manage doom emacs using home manager too?????
   home.packages = with pkgs; [
     akira-unstable
@@ -99,5 +106,6 @@
     tldr
     taffybar
     haskellPackages.status-notifier-item
+    slack
   ];
 }
