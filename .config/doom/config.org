@@ -105,7 +105,7 @@ Keep for refrence later..
 :ID:       25875f7e-6058-4876-aca3-a903be7f9300
 :END:
 #+BEGIN_SRC elisp
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-oceanic-next)
 #+END_SRC
 ** Frame title
 :PROPERTIES:
@@ -331,6 +331,8 @@ Keep for refrence later..
                                        ((alltodo "" ((org-agenda-overriding-header "")
                                                      (org-super-agenda-groups
                                                       '(
+                                                        (:name "Important"
+                                                         :priority "A")
                                                         (:name "Projects"
                                                          :todo "PROJ"
                                                          :children t
@@ -373,18 +375,18 @@ Keep for refrence later..
   :config
   (setq anki-editor-create-decks t))
 
-(map! :localleader
-      :map org-mode-map
-      (:prefix ("k" . "Anki")
-        :desc "Push" "p" 'anki-editor-push-notes
-        :desc "Retry" "r" 'anki-editor-retry-failure-notes
-        :desc "Insert" "n" 'anki-editor-insert-note
-        (:prefix ("c" . "Cloze")
-          :desc "Dwim" "d" 'anki-editor-cloze-dwim
-          :desc "Region" "r" 'anki-editor-cloze-region
-          )
-        )
- )
+;; (map! :localleader
+;;       :map org-mode-map
+;;       (:prefix ("k" . "Anki")
+;;         :desc "Push" "p" 'anki-editor-push-notes
+;;         :desc "Retry" "r" 'anki-editor-retry-failure-notes
+;;         :desc "Insert" "n" 'anki-editor-insert-note
+;;         (:prefix ("c" . "Cloze")
+;;           :desc "Dwim" "d" 'anki-editor-cloze-dwim
+;;           :desc "Region" "r" 'anki-editor-cloze-region
+;;           )
+;;         )
+;;  )
 #+END_SRC
 ** Mermaid
 :PROPERTIES:
@@ -501,65 +503,16 @@ Keep for refrence later..
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
 #+END_SRC
-** Org-ref
+** Bibliography
 :PROPERTIES:
 :ID:       bfdb1780-669c-4651-80fd-020a3dd72d17
 :END:
-[[https://github.com/jkitchin/org-ref][org-ref]] is a package that manages citations.
 #+begin_src emacs-lisp
-;; (use-package! org-ref
-;;   :after org
-;;   :config
-;;   (setq org-ref-completion-library 'org-ref-ivy-cite
-;;     org-ref-default-bibliography `,(list (concat org-directory "roam/biblio.bib"))
-;;     reftex-default-bibliography  `,(list (concat org-directory "roam/biblio.bib")))
-;;   )
-;; (use-package! org-roam-bibtex
-;;   :after org-roam
-
-;;   :hook (org-roam-mode . org-roam-bibtex-mode)
-;;   :config
-;;   (setq org-roam-bibtex-preformat-keywords
-;;    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
-
-;;   (setq orb-templates
-;;         `(("r" "ref" plain (function org-roam-capture--get-point)
-;;            ""
-;;            :file-name "lit/${slug}"
-;;            :head ,(concat
-;;                    "${title}\n"
-;;                    "#+roam_key: ${ref}\n\n"
-;;                    "* Notes"
-;;                    ":PROPERTIES:\n"
-;;                    ":Custom_ID: ${=key=}\n"
-;;                    ":URL: ${url}\n"
-;;                    ":AUTHOR: ${author-abbrev}\n"
-;;                    ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-;;                    ":NOTER_PAGE: \n"
-;;                    ":END:\n")
-;;            :unnarrowed t)))
-;; )
-;; (use-package! bibtex-completion
-;;   :config
-;;   (setq bibtex-completion-notes-path "~/org/roam/lit"
-;;         bibtex-completion-bibliography "~/org/roam/biblio.bib"
-;;         bibtex-completion-pdf-field "file"
-;;         bibtex-completion-notes-template-multiple-files
-;;          (concat
-;;           "${title}\n"
-;;           "#+roam_key: cite:${=key=}\n"
-;;           "* TODO Notes\n"
-;;           ":PROPERTIES:\n"
-;;           ":Custom_ID: ${=key=}\n"
-;;           ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-;;           ":AUTHOR: ${author-abbrev}\n"
-;;           ":JOURNAL: ${journaltitle}\n"
-;;           ":DATE: ${date}\n"
-;;           ":YEAR: ${year}\n"
-;;           ":DOI: ${doi}\n"
-;;           ":URL: ${url}\n"
-;;           ":END:\n\n"
-;;           )))
+(setq  org-cite-csl-styles-dir "~/Zotero/styles"
+       citar-bibliography "~/org/roam/biblio.bib"
+       citar-notes-paths '("~/org/roam/lit")
+       org-cite-global-bibliography '("~/org/roam/biblio.bib")
+       )
 #+end_src
 ** Org-recur(for recurring tasks)
 :PROPERTIES:
@@ -589,7 +542,8 @@ Keep for refrence later..
 #+begin_src emacs-lisp
 ;; Sets the languagetool java class path to the correct place
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
-(setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
+(let ((server (executable-find "languagetool-commandline")))
+    (if server (setq langtool-bin server)))
 #+end_src
 
 * Nov.el
@@ -687,9 +641,8 @@ For reading EPUBs.
 #+BEGIN_SRC emacs-lisp
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-;;(use-package! lsp-haskell
-  ;;:config
-  ;;(setq lsp-haskell-server-path "haskell-language-server"))
+(after! lsp-haskell
+  (setq lsp-haskell-server-path "haskell-language-server"))
 #+END_SRC
 ** openscad
 :PROPERTIES:
@@ -706,6 +659,12 @@ For reading EPUBs.
 #+begin_src emacs-lisp
 (use-package! kbd-mode
   :mode ("\\.kbd\\'" . kbd-mode))
+#+end_src
+** graphviz
+#+begin_src emacs-lisp
+(use-package! graphviz-dot-mode
+  :config
+  (setq graphviz-dot-indent-width 4))
 #+end_src
 
 * Presentations
@@ -739,13 +698,13 @@ For reading EPUBs.
 :END:
 #+BEGIN_SRC emacs-lisp
 (after! circe
-(set-irc-server! "Freenode"
+(set-irc-server! "irc.libera.chat"
   `(
-    :host "irc.freenode.net"
     :tls t
     :port 6697
     :nick "thiskappaisgrey"
     :nickserv-nick "thiskappaisgrey"
-    :nickserv-password (lambda (&rest _) (+pass-get-secret "irc/thiskappaisgrey"))
+    :channels ("#haskell-language-server" "#emacs")
+    :nickserv-password (lambda (&rest _) (+pass-get-secret "irc/libera.chat"))
     )))
 #+END_SRC

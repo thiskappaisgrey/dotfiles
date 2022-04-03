@@ -28,9 +28,11 @@
 (package! org-super-agenda)
 (package! dashboard)
 (package! org-recur)
-(package! scad-mode)
+;; (package! scad-mode)
 
 (package! ein)
+(package! zotxt) ;; zotero..
+(package! graphviz-dot-mode)
 ;; All of Doom's packages are pinned to a specific commit, and updated from
 ;; release to release. To un-pin all packages and live on the edge, do:
 ;(setq doom-pinned-packages nil)
@@ -59,9 +61,6 @@
 
 (package! kbd-mode
   :recipe (:host github :repo "kmonad/kbd-mode"))
-;; NECESARRY for Org-roam-bibtex
-;; When using org-roam via the `+roam` flag
-(unpin! bibtex-completion ivy-bibtex)
 ;; If the package you are trying to install does not contain a PACKAGENAME.el
 ;; file, or is located in a subdirectory of the repo, you'll need to specify
 ;; `:files' in the `:recipe':
@@ -83,4 +82,3 @@
 ;; This is required for some packages whose default branch isn't 'master' (which
 ;; our package manager can't deal with; see raxod502/straight.el#279)
 ;(package! builtin-package :recipe (:branch "develop"))
-(disable-packages! helm)

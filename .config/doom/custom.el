@@ -11,6 +11,7 @@
      (haskell-process-type . ghci)
      (dante-repl-command-line "ghci")
      (org-roam-db-location . "./org-roam.db")
+     (utop-command .  "opam config exec -- dune utop . -- -emacs")
      (org-roam-directory . "."))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

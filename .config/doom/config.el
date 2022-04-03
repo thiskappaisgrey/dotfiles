@@ -62,7 +62,7 @@
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-oceanic-next)
 
 ;; explcitly set the frametitle because otherwise the frame title would show weird characters
 ;; https://www.emacswiki.org/emacs/FrameTitle
@@ -236,6 +236,8 @@
                                        ((alltodo "" ((org-agenda-overriding-header "")
                                                      (org-super-agenda-groups
                                                       '(
+                                                        (:name "Important"
+                                                         :priority "A")
                                                         (:name "Projects"
                                                          :todo "PROJ"
                                                          :children t
@@ -272,18 +274,18 @@
   :config
   (setq anki-editor-create-decks t))
 
-(map! :localleader
-      :map org-mode-map
-      (:prefix ("k" . "Anki")
-        :desc "Push" "p" 'anki-editor-push-notes
-        :desc "Retry" "r" 'anki-editor-retry-failure-notes
-        :desc "Insert" "n" 'anki-editor-insert-note
-        (:prefix ("c" . "Cloze")
-          :desc "Dwim" "d" 'anki-editor-cloze-dwim
-          :desc "Region" "r" 'anki-editor-cloze-region
-          )
-        )
- )
+;; (map! :localleader
+;;       :map org-mode-map
+;;       (:prefix ("k" . "Anki")
+;;         :desc "Push" "p" 'anki-editor-push-notes
+;;         :desc "Retry" "r" 'anki-editor-retry-failure-notes
+;;         :desc "Insert" "n" 'anki-editor-insert-note
+;;         (:prefix ("c" . "Cloze")
+;;           :desc "Dwim" "d" 'anki-editor-cloze-dwim
+;;           :desc "Region" "r" 'anki-editor-cloze-region
+;;           )
+;;         )
+;;  )
 
 ;; (use-package! ob-mermaid
 ;;   :config
@@ -384,59 +386,11 @@
   (add-hook 'org-finalize-agenda-hook 'org-agenda-to-appt) ;; update appt list on agenda view
 )
 
-;; (use-package! org-ref
-;;   :after org
-;;   :config
-;;   (setq org-ref-completion-library 'org-ref-ivy-cite
-;;     org-ref-default-bibliography `,(list (concat org-directory "roam/biblio.bib"))
-;;     reftex-default-bibliography  `,(list (concat org-directory "roam/biblio.bib")))
-;;   )
-;; (use-package! org-roam-bibtex
-;;   :after org-roam
-
-;;   :hook (org-roam-mode . org-roam-bibtex-mode)
-;;   :config
-;;   (setq org-roam-bibtex-preformat-keywords
-;;    '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
-
-;;   (setq orb-templates
-;;         `(("r" "ref" plain (function org-roam-capture--get-point)
-;;            ""
-;;            :file-name "lit/${slug}"
-;;            :head ,(concat
-;;                    "${title}\n"
-;;                    "#+roam_key: ${ref}\n\n"
-;;                    "* Notes"
-;;                    ":PROPERTIES:\n"
-;;                    ":Custom_ID: ${=key=}\n"
-;;                    ":URL: ${url}\n"
-;;                    ":AUTHOR: ${author-abbrev}\n"
-;;                    ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-;;                    ":NOTER_PAGE: \n"
-;;                    ":END:\n")
-;;            :unnarrowed t)))
-;; )
-;; (use-package! bibtex-completion
-;;   :config
-;;   (setq bibtex-completion-notes-path "~/org/roam/lit"
-;;         bibtex-completion-bibliography "~/org/roam/biblio.bib"
-;;         bibtex-completion-pdf-field "file"
-;;         bibtex-completion-notes-template-multiple-files
-;;          (concat
-;;           "${title}\n"
-;;           "#+roam_key: cite:${=key=}\n"
-;;           "* TODO Notes\n"
-;;           ":PROPERTIES:\n"
-;;           ":Custom_ID: ${=key=}\n"
-;;           ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
-;;           ":AUTHOR: ${author-abbrev}\n"
-;;           ":JOURNAL: ${journaltitle}\n"
-;;           ":DATE: ${date}\n"
-;;           ":YEAR: ${year}\n"
-;;           ":DOI: ${doi}\n"
-;;           ":URL: ${url}\n"
-;;           ":END:\n\n"
-;;           )))
+(setq  org-cite-csl-styles-dir "~/Zotero/styles"
+       citar-bibliography "~/org/roam/biblio.bib"
+       citar-notes-paths '("~/org/roam/lit")
+       org-cite-global-bibliography '("~/org/roam/biblio.bib")
+       )
 
 (use-package org-recur
   :hook ((org-mode . org-recur-mode)
@@ -455,7 +409,8 @@
 
 ;; Sets the languagetool java class path to the correct place
 ;;(setq langtool-java-classpath (concat (shell-command-to-string "nix eval --raw nixos.languagetool") "/share/*"))
-(setq langtool-java-classpath "/nix/store/0q2ryblhplvajv18b50pgg37g2vmwg3a-LanguageTool-5.2/share/*")
+(let ((server (executable-find "languagetool-commandline")))
+    (if server (setq langtool-bin server)))
 
 (use-package! nov
   :mode ("\\.epub\\'" . nov-mode)
@@ -500,7 +455,7 @@
   (setq c-basic-offset 2)
   (setq tab-width 2))
 
- (setq python-shell-interpreter "python3"
+(setq python-shell-interpreter "python3"
       flycheck-python-pycompile-executable "python3")
 ;;(use-package! lsp-python-ms
   ;;:init
@@ -511,9 +466,8 @@
 
 ;; (after! dante
 ;;   (add-to-list 'flycheck-disabled-checkers 'haskell-hlint))
-;;(use-package! lsp-haskell
-  ;;:config
-  ;;(setq lsp-haskell-server-path "haskell-language-server"))
+(after! lsp-haskell
+  (setq lsp-haskell-server-path "haskell-language-server"))
 
 (use-package! scad-mode
   :mode "\\.scad$")
@@ -521,7 +475,11 @@
 (use-package! kbd-mode
   :mode ("\\.kbd\\'" . kbd-mode))
 
-  (map! :map org-present-mode-keymap
+(use-package! graphviz-dot-mode
+  :config
+  (setq graphviz-dot-indent-width 4))
+
+(map! :map org-present-mode-keymap
         :g [C-right] #'org-present-next
         :g [C-left]  #'org-present-prev
         )
@@ -537,12 +495,12 @@
   )
 
 (after! circe
-(set-irc-server! "Freenode"
+(set-irc-server! "irc.libera.chat"
   `(
-    :host "irc.freenode.net"
     :tls t
     :port 6697
     :nick "thiskappaisgrey"
     :nickserv-nick "thiskappaisgrey"
-    :nickserv-password (lambda (&rest _) (+pass-get-secret "irc/thiskappaisgrey"))
+    :channels ("#haskell-language-server" "#emacs")
+    :nickserv-password (lambda (&rest _) (+pass-get-secret "irc/libera.chat"))
     )))
