@@ -1,14 +1,18 @@
 #+title: Config
 #+PROPERTY: header-args:emacs-lisp :tangle yes
-* Emacs setup
+* TODO Emacs setup
+- [ ] Figure out how to make startup even faster (by lazy loading packages)
 #+begin_src emacs-lisp
   (setq inhibit-startup-message t)
+  ;; TODO figure out how to calculate this path
+  (add-to-list 'Info-directory-list (expand-file-name "share/info" (file-name-directory (shell-command-to-string "printf %s \"$(dirname $(realpath $(which emacs)))\""))))
   (require 'use-package)
   (setq straight-use-package-by-default t)
   (use-package restart-emacs
   :init
   (setq restart-emacs-restore-frames t)
   )
+  ;; TODO Add the "nix-store" info path to the search directory
 
 #+end_src
 * User Interface
@@ -19,8 +23,6 @@
   (set-fringe-mode 10)        ; Give some breathing room
 
   (menu-bar-mode -1)            ; Disable the menu bar
-
-  (load-theme 'wombat)
   
 #+end_src
 ** Fonts 
@@ -37,35 +39,144 @@
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
 	  doom-themes-enable-italic t) ; if nil, italics is universally disabled
+
+  ;;(setq custom-safe-themes t)
     (load-theme 'doom-one t)
   ;; treat all themes as safe so I don't get promts everytime I switch theme
-    (setq custom-safe-themes t)
     ;; Enable flashing mode-line on errors
     (doom-themes-visual-bell-config)
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
 #+end_src
-* TODO Completion
-- [ ] Add orderless + embark + consult for a more complete experience
+** Dashboard
 #+begin_src emacs-lisp
-  (use-package vertico
-  :init
-  (vertico-mode))
-
-  (use-package savehist
-  :straight nil
-   :init
-   (savehist-mode))
-
-  (use-package marginalia
-  :after vertico
-  :custom
-    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    (use-package dashboard
+      :ensure t
+      :config
+      (dashboard-setup-startup-hook)
+      (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*"))))
+#+end_src
+* TODO Completion [0/2]
+** TODO General completion
+- [ ] Add  embark + consult for a more complete experience
+#+begin_src emacs-lisp
+    (use-package vertico
     :init
-    (marginalia-mode))
+    (vertico-mode))
 
+    (use-package savehist
+    :straight nil
+     :init
+     (savehist-mode))
+
+    (use-package marginalia
+    :after vertico
+    :custom
+      (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+      :init
+      (marginalia-mode))
+    ;; TODO figure out how to configure
+  (use-package orderless
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  ;; TODO Add style dispatchers
+    (setq completion-styles '(orderless)
+	  completion-category-defaults nil
+	  completion-category-overrides '((file (styles partial-completion)))))
+  ;; TODO make sure to bind the consult commands
+  (use-package consult
+    :after vertico
+    :bind ("C-s" . consult-line)
+
+    ;; TODO customize project root function
+    )
 #+end_src
 
+** TODO Editor Completion
+- [ ] Rebind completion commands
+- [ ] I might want to disable autocomplete for certain modes(if I can figure out how to do it).
+#+begin_src emacs-lisp
+  (use-package corfu
+    ;; Optional customizations
+     :custom
+     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+     (corfu-auto t)                 ;; Enable auto completion
+     (corfu-separator ?\s)          ;; Orderless field separator
+    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+    ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+    ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
+     (corfu-scroll-margin 5)        ;; Use scroll margin
+
+    ;; You may want to enable Corfu only for certain modes.
+    ;; :hook ((prog-mode . corfu-mode)
+    ;;        (shell-mode . corfu-mode)
+    ;;        (eshell-mode . corfu-mode))
+
+    ;; Recommended: Enable Corfu globally.
+    ;; This is recommended since dabbrev can be used globally (M-/).
+    :init
+    (corfu-global-mode))
+    ;; Add extensions
+    (use-package cape
+    ;; TODO I might rebind these later
+    :bind (("C-c p p" . completion-at-point) ;; capf
+	    ("C-c p t" . complete-tag)        ;; etags
+	    ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+	    ("C-c p f" . cape-file)
+	    ("C-c p k" . cape-keyword)
+	    ("C-c p s" . cape-symbol)
+	    ("C-c p a" . cape-abbrev)
+	    ("C-c p i" . cape-ispell)
+	    ("C-c p l" . cape-line)
+	    ("C-c p w" . cape-dict)
+	    ("C-c p \\" . cape-tex)
+	    ("C-c p _" . cape-tex)
+	    ("C-c p ^" . cape-tex)
+	    ("C-c p &" . cape-sgml)
+	    ("C-c p r" . cape-rfc1345))
+    :init
+    ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-tex)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    (add-to-list 'completion-at-point-functions #'cape-keyword)
+    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+    ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+    ;;(add-to-list 'completion-at-point-functions #'cape-line)
+    )
+
+    ;; Use dabbrev with Corfu!
+  (use-package dabbrev
+    :straight nil
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+	   ("C-M-/" . dabbrev-expand)))
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :straight nil
+    :init
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
+
+    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
+
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (setq tab-always-indent 'complete))
+#+end_src
 * TODO Keybindings
 - [ ] create more keybindings
 - [ ] Figure out why org mode evil keys doesn't work
@@ -87,59 +198,81 @@
   :config
   (setq which-key-idle-delay 1))
 #+end_src 
-** Themes
+** Files
 #+begin_src emacs-lisp
-
-(tt/leader-keys
-  "t"  '(:ignore t :which-key "toggles")
-  ;;"tw" 'whitespace-mode
-  "tt" '(load-theme :which-key "choose theme"))
+  (tt/leader-keys
+    "f" '(:ignore t :which-key "files")
+    "ff" '(find-file :which-key "find file"))
 #+end_src
-** TODO Windows + Buffers
+** TODO Toggles
+- [ ] Make a toggle for line numbers
+#+begin_src emacs-lisp
+  (tt/leader-keys
+    "t"  '(:ignore t :which-key "toggles")
+    ;;"tw" 'whitespace-mode
+    "tt" '(load-theme :which-key "choose theme")
+    "tv" '(visual-line-mode :which-key "line wrapping")
+
+  )
+#+end_src
+** Windows + Buffers
+- I can steal bindings from: [[file:~/.doom-emacs.d/modules/config/default/+evil-bindings.el]] 
+#+begin_src emacs-lisp
+  (tt/leader-keys
+      "b" '(:ignore t :which-key "buffers")
+      "bb" '(switch-to-buffer :which-key "switch to buffer")
+      "bd" '(kill-this-buffer :which-key "kill this buffer")
+      "bk" '(kill-buffer :which-key "kill buffer")
+  )
+  (tt/leader-keys "w" '(evil-window-map :which-key "window"))
+#+end_src
 ** TODO Additional Org bindings
 * TODO Evil mode
 - [ ] You can actually *defer* the loading of evil-mode (and other
   modes) by attatching a hook to =pre-command-hook= (this makes it so
   that the functions attatched to the hook are loaded on first user input rather than immediately)
+- [ ] I want to look into how Doom lazy loads evil collection. Doom is
+  really fast because it lazy loads a lot of unnecessary packages, I want to figure out how to do the same. Relevant file: https://github.com/hlissner/doom-emacs/blob/master/modules/editor/evil/init.el 
 #+begin_src emacs-lisp
-    (use-package evil
-      :init
-      (setq evil-want-keybinding t)
-      :config
-      (evil-mode 1)
+      (use-package evil
+	:init
+	(setq evil-want-keybinding nil)
+	:config
+	(evil-mode 1)
 
-  )
-    (use-package evil-collection
-      :after evil
-      :disabled  
-      ;; :init
-      ;; (evil-collection-init 'dired)
-      )
-    (use-package evil-easymotion
-      :after evil
-      :config
-      ;; TODO fix this
-      (evilem-default-keybindings "C-;"))
-    (use-package evil-org
-      :after org
-      :hook (org-mode . evil-org-mode)
-      :init
-      (setq evil-org-use-additional-insert t)
-      :config
-      (require 'evil-org)
-      (require 'evil-org-agenda)
-      (evil-org-set-key-theme '(navigation insert textobjects additional calendar))
-
-      (evil-org-agenda-set-keys))
-  (use-package evil-escape
-    :straight  (:host github :repo "hlissner/evil-escape")
-    :hook (evil-mode . evil-escape-mode)
-    :init
-     (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
-	  ;;evil-escape-excluded-major-modes '(neotree-mode treemacs-mode vterm-mode)
-	  evil-escape-key-sequence "fd"
-	  evil-escape-delay 0.15)
     )
+      (use-package evil-collection
+	:after evil
+	;;:disabled  
+	 :init
+	 (evil-collection-init '(calendar dired calc info))
+	)
+      (use-package evil-easymotion
+	:after evil
+	:config
+	;; TODO fix this
+	(evilem-default-keybindings "C-;"))
+      (use-package evil-org
+	:after org
+	:hook (org-mode . evil-org-mode)
+	:init
+	(setq evil-org-use-additional-insert t)
+	:config
+	(require 'evil-org)
+	(require 'evil-org-agenda)
+	(evil-org-set-key-theme '(navigation insert textobjects additional calendar return))
+	(evil-org-agenda-set-keys))
+    (use-package evil-escape
+      :straight  (:host github :repo "hlissner/evil-escape")
+      :after evil
+  ;;    :hook (evil-mode . evil-escape-mode)
+      :init
+	(evil-escape-mode)
+       (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
+	    ;;evil-escape-excluded-major-modes '(neotree-mode treemacs-mode vterm-mode)
+	    evil-escape-key-sequence "fd"
+	    evil-escape-delay 0.15)
+      )
 #+end_src
 
 * Modeline
@@ -168,39 +301,156 @@
   )
 #+end_src
 
-* TODO Org Mode 
+* TODO Org Mode
 - [ ] Figure out how to improve my org-mode workflow (copy from other people). Also make my org-mode look better (maybe switchable themes).
 - [ ] Try to split up the org-mode workflow into different functions and load/require it (to make it more readable)
 #+begin_src emacs-lisp
-  (use-package org
-  ;; TODO add a straight recipe to get the latest org-version
-    :straight nil
-    :defer t
-    :config
-    (setq org-modules
-	  '(org-crypt
-	    org-habit
-	    org-tempo))
-      (setq org-directory "~/org/"
-	  org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org" "~/org/gtd/habits.org")
-	  ;;org-re-reveal-root "/home/thanawat/reveal.js/"
-	  org-export-with-toc nil
-	  org-hide-emphasis-markers t
-	  org-log-into-drawer t
-	  org-log-done 'time
-	  org-export-with-section-numbers nil)
-      (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
-      (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
-      (setq org-capture-templates
-	'(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-	  ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-	  ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
-	  ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)))
-      (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
-      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-      (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
-  )
+    (use-package org
+      :straight (:type built-in)
+      :defer t
+      :config
+      ;;(setq org-modules
+	  ;;  '(org-crypt
+	   ;;   org-habit
+	    ;;  org-tempo))
+	(setq org-directory "~/org/"
+	    org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org" "~/org/gtd/habits.org")
+	    ;;org-re-reveal-root "/home/thanawat/reveal.js/"
+	    org-export-with-toc nil
+	    org-hide-emphasis-markers t
+	    org-log-into-drawer t
+	    org-log-done 'time
+	    org-ellipsis " ▾"
+	    org-export-with-section-numbers nil
+	    )
+	(setq org-agenda-window-setup 'current-window)
 
-
+	(setcar (nthcdr 4 org-emphasis-regexp-components) 10)
+	(org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+	(setq org-capture-templates
+	  '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+	    ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+	    ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
+	    ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)))
+    ;; TODO I might remove this to use tempel package instead
+	(require 'org-tempo)
+	(add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+	(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+	(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
+    )
 #+end_src
 ** Org Appearance
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :after org
+    :hook ((org-mode . org-modern-mode) (org-agenda-finalize . org-modern-agenda))
+    )
+
+  (use-package org-appear
+    :after org
+    :straight (:type git :host github :repo "awth13/org-appear")
+    :hook (org-mode . org-appear-mode))
+#+end_src
+** Org Agenda
+*** Org recur
+#+begin_src emacs-lisp
+  (use-package org-recur
+    :hook ((org-mode . org-recur-mode)
+	 (org-agenda-mode . org-recur-agenda-mode))
+    ;; TODO make this specific to org-recur mode
+    :config
+
+    (define-key org-recur-mode-map (kbd "C-c d") 'org-recur-finish)
+    (define-key org-recur-agenda-mode-map (kbd "C-c d") 'org-recur-finish)
+    (setq org-recur-finish-done t
+	org-recur-finish-archive t)
+    )
+#+end_src
+
+*** Super Agenda
+#+begin_src elisp
+  (use-package org-super-agenda
+    :after org-agenda
+    :hook (org-agenda-mode . org-super-agenda-mode)
+    :init
+    (setq org-agenda-skip-scheduled-if-done t
+	org-agenda-skip-deadline-if-done t
+	org-agenda-include-deadlines t
+	org-agenda-block-separator nil
+	org-agenda-tags-column 100 ;; from testing this seems to be a good value
+	org-agenda-compact-blocks t)
+    (setq org-super-agenda-groups
+	  '(;; Each group has an implicit boolean OR operator between its selectors.
+	    (:name "Today"  ; Optionally specify section name
+	     :time-grid t  ; Items that appear on the time grid
+	     :todo "TODAY")  ; Items that have this TODO keyword
+	    (:name "Important"
+	     :priority "A")
+	    ;; Set order of multiple groups at once
+	    (:name "Shopping"
+	     :tag "shopping")
+	    (:name "Recipes"
+	     ;; Multiple args given in list with implicit OR
+	     :tag ("food"))
+	    (:name "Habits"
+	     :habit t)
+	    (:name "School"
+	     :tag "school")
+	    (:name "coding"
+	     :tag "coding")
+
+	    (:name "next"
+	     :tag "next"
+	     :scheduled nil)
+	    ;; Groups supply their own section names when none are given
+	    (:todo "WAITING" :order 8)  ; Set order of this section
+	    (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+	     ;; Show this group at the end of the agenda (since it has the
+	     ;; highest number). If you specified this group last, items
+	     ;; with these todo keywords that e.g. have priority A would be
+	     ;; displayed in that group instead, because items are grouped
+	     ;; out in the order the groups are listed.
+	     :order 9)
+	    (:priority<= "B"
+	     ;; Show this section after "Today" and "Important", because
+	     ;; their order is unspecified, defaulting to 0. Sections
+	     ;; are displayed lowest-number-first.
+	     :order 1)
+	    ;; After the last group, the agenda will display items that didn't
+	    ;; match any of these groups, with the default order position of 99
+	    ))
+    (setq
+      org-super-agenda-header-map (make-sparse-keymap)
+      org-agenda-custom-commands '(("h" "my custom agenda view"
+					 ((alltodo "" ((org-agenda-overriding-header "")
+						       (org-super-agenda-groups
+							'(
+							  (:name "Important"
+							   :priority "A")
+							  (:name "Projects"
+							   :todo "PROJ"
+							   :children t
+							   :order 1)
+							  (:name "To Process"
+							   :file-path "inbox\\.org"
+							   :order 2)
+							  (:name "School"
+							   :tag "school"
+							   :order 3)
+							  (:order-multi (2 (:name "Shopping for Food items"
+									    ;; Boolean AND group matches items that match all subgroups
+									    :and (:tag "shopping"))
+									   (:name "Food and cooking"
+									    ;; Multiple args given in list with implicit OR
+									    :tag ("food" "cooking"))))
+							  (:discard (:anything t))
+							  )))))
+					 ))
+	  )
+
+
+
+    :config
+    (org-super-agenda-mode)
+    )
+#+end_src

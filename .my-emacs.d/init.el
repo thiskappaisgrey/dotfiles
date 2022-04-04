@@ -3,6 +3,11 @@
 ;;(setq user-emacs-directory "~/.dotfiles/home/emacs")
 
 ;(setq debug-on-error t)
+
+;; Make Emacs startup faster
+(setq gc-cons-threshold (* 50 1000 1000))
+
+
 ;; setup straight
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -18,17 +23,20 @@
   (load bootstrap-file nil 'nomessage))
 (setq package-enable-at-startup nil)
 (straight-use-package 'use-package)
+;; use the gcmh package to make startup faster
+(straight-use-package '(gcmh :type git :host gitlab :repo "koral/gcmh"))
+(gcmh-mode 1)
+
+;; profile emacs startup
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s seconds with %d garbage collections."
+                     (emacs-init-time "%.2f")
+                     gcs-done)))
+(add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
+(setq native-comp-async-report-warnings-errors nil)
+
+
 (org-babel-load-file (concat user-emacs-directory "/config.org"))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("8146edab0de2007a99a2361041015331af706e7907de9d6a330a3493a541e5a6" default)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+;; set gc-cons back
+;; (setq gc-cons-threshold (* 2 1000 1000))
