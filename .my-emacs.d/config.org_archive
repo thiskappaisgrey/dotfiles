@@ -1,0 +1,174 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/thanawat/.my-emacs.d/config.org
+
+
+* Evil setup 
+:PROPERTIES:
+:ARCHIVE_TIME: 2022-04-13 Wed 16:31
+:ARCHIVE_FILE: ~/.my-emacs.d/config.org
+:ARCHIVE_CATEGORY: config
+:END:
+- [ ] You can actually *defer* the loading of evil-mode (and other
+  modes) by attatching a hook to =pre-command-hook= (this makes it so
+  that the functions attatched to the hook are loaded on first user input rather than immediately)
+#+begin_src emacs-lisp
+   (use-package undo-tree
+     :custom (undo-tree-auto-save-history nil)
+     :init
+     (global-undo-tree-mode 1))
+   (use-package evil
+       :custom
+       (evil-want-keybinding nil)
+       (evil-undo-system 'undo-tree)
+       :config
+       (evil-mode 1)
+
+       )
+   (use-package evil-collection
+       :after evil
+       ;;:disabled  
+       :init
+       (evil-collection-init '(calendar dired calc info))
+       )
+   ;; (use-package evil-easymotion
+   ;;     :after evil
+   ;;     :config
+   ;;     ;; TODO fix this
+   ;;     (evilem-default-keybindings "C-;"))
+  (use-package evil-nerd-commenter
+     :general
+     ;; (tt/evil-go-leader-key  "cl" 'evilnc-comment-or-uncomment-lines)
+     (tt/evil-go-leader-key "c" 'evilnc-comment-operator)
+     )
+
+
+  (use-package evil-org
+      :after org
+      :hook (org-mode . evil-org-mode)
+      :init
+      (setq evil-org-use-additional-insert t)
+      :config
+      (require 'evil-org)
+      (require 'evil-org-agenda)
+      (evil-org-set-key-theme '(navigation insert textobjects additional calendar return))
+      (evil-org-agenda-set-keys))
+   (use-package evil-escape
+   :straight  (:host github :repo "hlissner/evil-escape")
+   :after evil
+   ;;    :hook (evil-mode . evil-escape-mode)
+   :init
+       (evil-escape-mode)
+       (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
+	   ;;evil-escape-excluded-major-modes '(neotree-mode treemacs-mode vterm-mode)
+	   evil-escape-key-sequence "fd"
+	   evil-escape-delay 0.15)
+   )
+#+end_src
+
+* Keybindings
+:PROPERTIES:
+:ARCHIVE_TIME: 2022-04-13 Wed 16:31
+:ARCHIVE_FILE: ~/.my-emacs.d/config.org
+:ARCHIVE_CATEGORY: config
+:END:
+- [ ] create more keybindings
+- [ ] Figure out why org mode evil keys doesn't work
+- todo add a kbd for emacs eval
+#+begin_src emacs-lisp
+    (use-package general
+      :config
+      ;;(general-evil-setup t)
+
+      (general-create-definer tt/leader-keys
+	:states '(normal insert visual emacs)
+	:prefix "SPC"
+	:non-normal-prefix "C-SPC")
+    (general-create-definer tt/evil-go-leader-key
+      :keymaps '(normal)
+      :prefix "g")
+    )
+  
+  (use-package which-key
+    :init (which-key-mode)
+    :diminish which-key-mode
+    :config
+    (setq which-key-idle-delay 1))
+#+end_src 
+** Files
+#+begin_src emacs-lisp
+  (tt/leader-keys
+    "f" '(:ignore t :which-key "files")
+    "ff" '(find-file :which-key "find file")
+    ;;"fr" '(consult-recent-file :which-key "recent file")
+    "fl" '(consult-locate :which-key "locate file")
+   )
+
+#+end_src
+** TODO Toggles
+- [ ] Make a toggle for line numbers
+#+begin_src emacs-lisp
+  (tt/leader-keys
+    "t"  '(:ignore t :which-key "toggles")
+    ;;"tw" 'whitespace-mode
+    "tt" '(load-theme :which-key "choose theme")
+    "tv" '(visual-line-mode :which-key "line wrapping")
+
+  )
+#+end_src
+** Windows + Buffers
+- I can steal bindings from: [[file:~/.doom-emacs.d/modules/config/default/+evil-bindings.el]] 
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :bind ("M-o" . ace-window))
+  (tt/leader-keys
+      "b" '(:ignore t :which-key "buffers")
+      "bb" '(switch-to-buffer :which-key "switch to buffer")
+      "bd" '(kill-this-buffer :which-key "kill this buffer")
+      "bk" '(kill-buffer :which-key "kill buffer")
+  )
+  (tt/leader-keys "w" '(evil-window-map :which-key "window"))
+#+end_src
+** Apps
+#+begin_src emacs-lisp
+  (tt/leader-keys
+    "a" '(org-agenda :which-key "agenda"))
+  
+#+end_src
+
+* TODO Keybindings
+:PROPERTIES:
+:ARCHIVE_TIME: 2022-04-13 Wed 16:32
+:ARCHIVE_FILE: ~/.my-emacs.d/config.org
+:ARCHIVE_OLPATH: Org Mode
+:ARCHIVE_CATEGORY: config
+:ARCHIVE_TODO: TODO
+:END:
+#+begin_src emacs-lisp
+  (tt/leader-keys org-mode-map
+    "m" '(:ignore t :which-key "org-mode map")
+    "mt" '(org-todo :which-key "org todo"))
+#+end_src
+
+
+* Experiment
+:PROPERTIES:
+:ARCHIVE_TIME: 2022-04-13 Wed 17:47
+:ARCHIVE_FILE: ~/.my-emacs.d/config.org
+:ARCHIVE_OLPATH: Meow/Define keys
+:ARCHIVE_CATEGORY: config
+:END:
+#+header: :var normal-keybindings=normal-keybindings :var motion-keybindings=motion-keybindings :var leader-keybindings=leader-keybindings
+#+begin_src emacs-lisp :tangle nil
+  (setq  parse-def  (lambda (x)
+			  (cons (format "%s" (car x))
+				  (if (string-prefix-p "dispatch:" (cadr x))
+				      (string-trim (substring (cadr x) 9))
+				  (intern (cadr x))))))
+  (message "keybinds %s" motion-keybindings)
+
+#+end_src
+
+#+RESULTS:
+: keybinds ((<escape> ignore) (1 select-window-1) (2 select-window-2) (3 select-window-3) (4 select-window-4) (5 select-window-5) (6 select-window-6) (7 select-window-7) (8 select-window-8) (9 select-window-9) (0 select-window-0))

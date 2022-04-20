@@ -1,20 +1,259 @@
+
 #+title: Config
-#+PROPERTY: header-args:emacs-lisp :tangle yes
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 * TODO Emacs setup
 - [ ] Figure out how to make startup even faster (by lazy loading packages)
+** Garbage collection
+#+begin_src emacs-lisp
+;; Make Emacs startup faster
+(setq gc-cons-threshold (* 50 1000 1000))
+;; profile emacs startup
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s seconds with %d garbage collections."
+                     (emacs-init-time "%.2f")
+                     gcs-done)))
+
+#+end_src
+** Setup Straight
+#+begin_src emacs-lisp
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(setq package-enable-at-startup nil)
+
+#+end_src
+
+** gcmh
+#+begin_src emacs-lisp
+;; use the gcmh package to make startup faster
+(straight-use-package '(gcmh :type git :host gitlab :repo "koral/gcmh"))
+(gcmh-mode 1)
+#+end_src
+** Intial Settings
 #+begin_src emacs-lisp
   (setq inhibit-startup-message t)
   ;; TODO figure out how to calculate this path
   (add-to-list 'Info-directory-list (expand-file-name "share/info" (file-name-directory (shell-command-to-string "printf %s \"$(dirname $(realpath $(which emacs)))\""))))
-  (require 'use-package)
-  (setq straight-use-package-by-default t)
-  (use-package restart-emacs
-  :init
-  (setq restart-emacs-restore-frames t)
-  )
+  (setq backup-directory-alist
+	`(("." . ,(concat user-emacs-directory "backups"))))
   ;; TODO Add the "nix-store" info path to the search directory
+  (add-to-list 'native-comp-eln-load-path (expand-file-name "eln-cache/" user-emacs-directory))
+  (setq native-comp-async-report-warnings-errors nil)
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+#+end_src
+
+** Setup.el Emacs
+- copied from: https://github.com/daviwil/dotfiles/blob/master/Emacs.org#pkg
+#+begin_src emacs-lisp
+  (straight-use-package '(setup :type git :host nil :repo "https://git.sr.ht/~pkal/setup"))
+  (require 'setup)
+  ;; copied from
+  ;; (defun tt/filter-straight-recipe (recipe)
+  ;;   (let* ((plist (cdr recipe))
+  ;; 	 (name (plist-get plist :straight)))
+  ;;     (cons (if (and name (not (equal name t)))
+  ;; 	      name
+  ;; 	    (car recipe))
+  ;; 	  (plist-put plist :straight nil))))
+  (setup-define :pkg
+    (lambda (&rest recipe)
+           ;; `(straight-use-package ',(tt/filter-straight-recipe recipe)))
+`(unless (straight-use-package ',recipe)
+       ,(setup-quit)))
+    :documentation "Install RECIPE via straight.el"
+    :shorthand #'cadr)
+
+
+  (setup-define :load-after
+    (lambda (features &rest body)
+      (let ((body `(progn
+		     (require ',(setup-get 'feature))
+		     ,@body)))
+	(dolist (feature (if (listp features)
+			     (nreverse features)
+			   (list features)))
+	  (setq body `(with-eval-after-load ',feature ,body)))
+	body))
+    :documentation "Load the current feature after FEATURES."
+    :indent 1)
+
+  (setup-define :disabled
+    (lambda ()
+      `,(setup-quit))
+    :documentation "Always stop evaluating the body.")
+
+  (setup-define :delay
+    (lambda (&rest time)
+      `(run-with-idle-timer ,(or time 1)
+			    nil ;; Don't repeat
+			    (lambda () (require ',(setup-get 'feature)))))
+    :documentation "Delay loading the feature until a certain amount of idle time has passed.")
+
+	    #+end_src
+* Editing: Meow
+- Copied from here: https://github.com/DogLooksGood/meomacs (look at private.org)
+- It's actually super cool how you are able to define keybindings in a TABLE and add them to org-mode like that
+** Programmer Norman
+*** Normal
+Tweaking the following table for key bindings in normal state.
+
+#+name: normal-keybindings
+| key      | command                   |
+|----------+---------------------------|
+| ?        | meow-keypad-describe-key  |
+| 1        | meow-expand-1             |
+| 2        | meow-expand-2             |
+| 3        | meow-expand-3             |
+| 4        | meow-expand-4             |
+| 5        | meow-expand-5             |
+| 6        | meow-expand-6             |
+| 7        | meow-expand-7             |
+| 8        | meow-expand-8             |
+| 9        | meow-expand-9             |
+| 0        | meow-expand-0             |
+| -        | negative-argument         |
+| ;        | meow-reverse              |
+| ,        | meow-inner-of-thing       |
+| .        | meow-bounds-of-thing      |
+| <        | meow-beginning-of-thing   |
+| >        | meow-end-of-thing         |
+| a        | my-meow-append            |
+| A        | meow-open-below           |
+| b        | meow-back-word            |
+| B        | meow-back-symbol          |
+| c        | meow-change               |
+| C        | meow-comment              |
+| d        | meow-delete               |
+| D        | meow-backward-delete      |
+| e        | meow-next-word            |
+| E        | meow-next-symbol          |
+| f        | meow-find                 |
+| g        | meow-cancel-selection     |
+| G        | meow-grab                 |
+| h        | meow-right                |
+| H        | meow-right-expand         |
+| i        | meow-prev                 |
+| I        | meow-prev-expand          |
+| j        | meow-join                 |
+| k        | meow-kill                 |
+| l        | meow-line                 |
+| L        | meow-goto-line            |
+| m        | meow-pop-selection        |
+| M        | meow-sync-grab            |
+| n        | meow-next                 |
+| N        | meow-next-expand          |
+| o        | meow-left                 |
+| O        | meow-left-expand          |
+| p        | meow-block                |
+| P        | meow-to-block             |
+| q        | meow-quit                 |
+| r        | meow-replace-save         |
+| R        | meow-swap-grab            |
+| s        | meow-insert               |
+| S        | meow-open-above           |
+| t        | meow-till-expand          |
+| T        | meow-indent               |
+| u        | meow-undo                 |
+| U        | meow-undo-in-selection    |
+| v        | meow-visit                |
+| w        | meow-mark-word            |
+| W        | meow-mark-symbol          |
+| x        | meow-save                 |
+| X        | meow-clipboard-save       |
+| y        | meow-yank                 |
+| Y        | meow-clipboard-yank       |
+| $        | repeat                    |
+| /        | meow-search               |
+| '        | repeat                    |
+| ~        | meow-query-replace-regexp |
+| %        | meow-query-replace        |
+| <escape> | ignore                    |
+
+*** Motion
+
+Tweaking following table for key bindings in motion state.
+
+#+name: motion-keybindings
+| key      | command   |
+|----------+-----------|
+| <escape> | ignore    |
+| n        | meow-next |
+| i        | meow-prev |
+*** Leader
+
+Tweaking following table for key bindings in leader keymap.
+
+#+name: leader-keybindings
+| key | command                 | description |
+|-----+-------------------------+-------------|
+| e   | dispatch: C-x C-e       |             |
+| u   | meow-universal-argument |             |
+| w w | other-window            |             |
+| w v | split-window-right      |             |
+| w s | split-window-below      |             |
+| w o | delete-other-windows    |             |
+| w d | delete-window           |             |
+| b   | switch-to-buffer        |             |
+| n   | dispatch: H-n           |             |
+| i   | dspatch: H-i            |             |
+** Meow Setup
+- essentially, "parse-def" takes a list of lists with 2 elements, and
+  turns them into cons cell. It also changes the second element if
+  needed.
+- =((1 select-window-1))= -> =((1 . select-window-1))=. This is because  define-key takes a cons cell, but the emacs org-mode table returns
+  lists of lists
+#+header: :var normal-keybindings=normal-keybindings :var motion-keybindings=motion-keybindings :var leader-keybindings=leader-keybindings
+#+begin_src emacs-lisp 
+  (setup (:pkg meow)
+    ;; (:option
+    ;;  meow-cheatsheet-layout meow-cheatsheet-layout-norman
+    ;;  sentence-end-double-space 'nil)
+
+    (defun my-meow-append ()
+      (interactive)
+      (unless (region-active-p) (forward-char 1))
+      (if meow--temp-normal
+	  (progn
+	    (message "Quit temporary normal mode")
+	    (meow--switch-state 'motion))
+	(meow--direction-forward)
+	(when (bound-and-true-p delete-selection-mode)
+	  (meow--cancel-selection))
+	(meow--switch-state 'insert)))
+    (defun meow-setup ()
+      (let ((parse-def (lambda (x)
+			 (cons (format "%s" (car x))
+			       (if (string-prefix-p "dispatch:" (cadr x))
+				   (string-trim (substring (cadr x) 9))
+				 (intern (cadr x)))))))
+	;; "normal-keybindings" and the like are defined in org-tables
+	(apply #'meow-normal-define-key (mapcar parse-def normal-keybindings))
+	(apply #'meow-motion-overwrite-define-key (mapcar parse-def motion-keybindings))
+	(apply #'meow-leader-define-key (mapcar parse-def leader-keybindings))))
+    (require 'meow)
+    (setq      meow-cheatsheet-layout meow-cheatsheet-layout-norman
+	       sentence-end-double-space 'nil)
+
+
+    (meow-setup)
+    (meow-global-mode 1)
+    )
+
+  ;; (meow-global-mode 1)
 
 #+end_src
+
+
 * User Interface
 #+begin_src emacs-lisp
   (scroll-bar-mode -1)        ; Disable visible scrollbar
@@ -23,124 +262,179 @@
   (set-fringe-mode 10)        ; Give some breathing room
 
   (menu-bar-mode -1)            ; Disable the menu bar
-  
+
 #+end_src
+
+
 ** Fonts 
 #+begin_src emacs-lisp
-   ;; TODO copy over the right font
-   (set-face-attribute 'default nil
-			  :font "Hasklug Nerd Font Mono"
-			  :height 170)
+  ;; TODO copy over the right font
+  (set-face-attribute 'default nil
+		      :font "Hasklug Nerd Font Mono"
+		      :height 170)
 #+end_src
+
+
 ** Themes
 #+begin_src emacs-lisp
-  (use-package doom-themes
-    :config
-    ;; Global settings (defaults)
-    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-	  doom-themes-enable-italic t) ; if nil, italics is universally disabled
-
-  ;;(setq custom-safe-themes t)
-    (load-theme 'doom-one t)
-  ;; treat all themes as safe so I don't get promts everytime I switch theme
-    ;; Enable flashing mode-line on errors
+  (setup (:pkg doom-themes)
     (doom-themes-visual-bell-config)
-    ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
+  (load-theme 'doom-one t)
+  (setq custom-safe-themes t)
 #+end_src
+
+
 ** Dashboard
 #+begin_src emacs-lisp
-    (use-package dashboard
-      :ensure t
-      :config
-      (dashboard-setup-startup-hook)
-      (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*"))))
+  (setup (:pkg dashboard)
+    (dashboard-setup-startup-hook)
+    ;; ;; TODO only set this when I start in daemon!!
+    (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*"))))	  
+#+end_src
+
+
+** TODO Tab Bar
+- https://systemcrafters.net/live-streams/december-17-2021/
+- [ ] Make a new keymap for tab bar
+#+begin_src emacs-lisp
+  (setq tab-bar-new-tab-choice "*dashboard*")
+  ;;(global-set-key (kbd "C-z") tab-bar-prefix-map)
+#+end_src
+** TODO Modeline
+- Use telephone line instead
+#+begin_src emacs-lisp
+#+end_src
+** TODO Popups with Popper
+- if popper doesn't work, I might also want to look into: https://github.com/emacsorphanage/popwin
+#+begin_src emacs-lisp
+  (setup (:pkg popper)
+    (:bind "C-*"    popper-toggle-latest
+	   "M-*"    popper-cycle
+	   "C-M-*"  popper-toggle-type)
+    (setq popper-reference-buffers
+	  '("\\*Messages\\*"
+	    "Output\\*$"
+	    "\\*Async Shell Command\\*"
+	    help-mode
+	    compilation-mode
+
+	    "^\\*eshell.*\\*$" eshell-mode ;eshell as a popup
+	    "^\\*shell.*\\*$"  shell-mode  ;shell as a popup
+	    "^\\*term.*\\*$"   term-mode   ;term as a popup
+	    "^\\*vterm.*\\*$"  vterm-mode  ;vterm as a popup
+	    ))
+    (popper-mode +1)
+    (popper-echo-mode +1))                ; For echo area hints
+
+
 #+end_src
 * TODO Completion [0/2]
 ** TODO General completion
 - [ ] Add  embark + consult for a more complete experience
 #+begin_src emacs-lisp
-    (use-package vertico
-    :init
+  (setup (:pkg vertico )
     (vertico-mode))
+  (setup (:pkg all-the-icons-completion)  (:with-hook marginalia-mode (:hook all-the-icons-completion-marginalia-setup)))
+  (setup (:pkg marginalia)
+    (:option
+     marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    (marginalia-mode 1))
+  (setup savehist
+    (setq history-length 25)
+    (savehist-mode 1))
 
-    (use-package savehist
-    :straight nil
-     :init
-     (savehist-mode))
 
-    (use-package marginalia
-    :after vertico
-    :custom
-      (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-      :init
-      (marginalia-mode))
-    ;; TODO figure out how to configure
-  (use-package orderless
-    :init
-    ;; Configure a custom style dispatcher (see the Consult wiki)
-    ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  ;; TODO Add style dispatchers
-    (setq completion-styles '(orderless)
-	  completion-category-defaults nil
-	  completion-category-overrides '((file (styles partial-completion)))))
-  ;; TODO make sure to bind the consult commands
-  (use-package consult
-    :after vertico
-    :bind ("C-s" . consult-line)
+  ;; TODO figure out how to configure
+  (setup (:pkg orderless)
+    (:option completion-styles '(orderless)
+	     completion-category-defaults nil
+	     completion-fcategory-overrides '((file (styles partial-completion))))
+    (require 'orderless))
 
-    ;; TODO customize project root function
-    )
+  (setup (:pkg embark)
+    (:global
+     "C-."  embark-act
+     "M-."  embark-dwim
+     "C-h B"  embark-bindings)
+    (setq prefix-help-command #'embark-prefix-help-command))
+
+  (setup (:pkg consult)
+    ;; (require 'consult)
+    (:global "C-s" consult-line
+	     "C-c f f" find-file
+	     "C-c f r" consult-recent-file)
+    (:when-loaded
+      (consult-customize consult-recent-file :preview-key (kbd "M-.")))
+    )	 ;;"C-M-j" persp-switch-to-buffer*)
+
+  ;; (:with-map minibuffer-local-map
+  ;;   (:bind "C-r" consult-history))
+
 #+end_src
 
+
 ** TODO Editor Completion
-- [ ] Rebind completion commands
 - [ ] I might want to disable autocomplete for certain modes(if I can figure out how to do it).
+- [ ] Look into other extensions for corfu 
 #+begin_src emacs-lisp
-  (use-package corfu
+  (setup (:pkg corfu)
     ;; Optional customizations
-     :custom
-     (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-     (corfu-auto t)                 ;; Enable auto completion
-     (corfu-separator ?\s)          ;; Orderless field separator
-    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-    ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-    ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
-     (corfu-scroll-margin 5)        ;; Use scroll margin
+    (:option
+     corfu-cycle t                ;; Enable cycling for `corfu-next/previous'
+     corfu-auto  t               ;; Enable auto completion
+     corfu-separator ?\s          ;; Orderless field separator
+     ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+     ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+     ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+     ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+     ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+     ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
+     corfu-scroll-margin 5        ;; Use scroll margin
+     )
+    (:load-after cape
 
-    ;; You may want to enable Corfu only for certain modes.
-    ;; :hook ((prog-mode . corfu-mode)
-    ;;        (shell-mode . corfu-mode)
-    ;;        (eshell-mode . corfu-mode))
+      ;; (:with-map corfu-map
+      ;;   (:bind
+      ;;    "TAB"  corfu-next
+      ;;    [tab]  corfu-next
+      ;;    "S-TAB"  corfu-previous
+      ;;    [backtab]  corfu-previous))
+      ;; add a list of corfu extensions
+      (add-to-list 'load-path "~/.my-emacs.d/straight/build/corfu/extensions/")
+      (require 'corfu-history)
+      (require 'corfu-info)
+      (require 'corfu-indexed)
+      (corfu-global-mode)))
 
-    ;; Recommended: Enable Corfu globally.
-    ;; This is recommended since dabbrev can be used globally (M-/).
-    :init
-    (corfu-global-mode))
-    ;; Add extensions
-    (use-package cape
+
+  (setup (:pkg kind-icon)
+    (:load-after corfu
+      (:option kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+      (require 'kind-icon)
+      (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter)))
+  ;; icons for corfu
+  ;; Add extensions
+  (setup (:pkg cape)
+    ;; (:load-after corfu)
     ;; TODO I might rebind these later
-    :bind (("C-c p p" . completion-at-point) ;; capf
-	    ("C-c p t" . complete-tag)        ;; etags
-	    ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-	    ("C-c p f" . cape-file)
-	    ("C-c p k" . cape-keyword)
-	    ("C-c p s" . cape-symbol)
-	    ("C-c p a" . cape-abbrev)
-	    ("C-c p i" . cape-ispell)
-	    ("C-c p l" . cape-line)
-	    ("C-c p w" . cape-dict)
-	    ("C-c p \\" . cape-tex)
-	    ("C-c p _" . cape-tex)
-	    ("C-c p ^" . cape-tex)
-	    ("C-c p &" . cape-sgml)
-	    ("C-c p r" . cape-rfc1345))
-    :init
+
+    ;; (:global "C-c p p"  completion-at-point ;; capf
+    ;; 	 "C-c p t"  complete-tag       ;; etags
+    ;; 	 "C-c p d"  cape-dabbrev        ;; or dabbrev-completion
+    ;; 	 "C-c p f"  cape-file
+    ;; 	 "C-c p k"  cape-keyword
+    ;; 	 "C-c p s"  cape-symbol
+    ;; 	 "C-c p a"  cape-abbrev
+    ;; 	 "C-c p i"  cape-ispell
+    ;; 	 "C-c p l"  cape-line
+    ;; 	 "C-c p w"  cape-dict
+    ;; 	 "C-c p \\" cape-tex
+    ;; 	 "C-c p &"  cape-sgml
+    ;; 	 "C-c p r"  cape-rfc1345)
     ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    ;; corfu needs cape to work, so I eagerly load it
+    (require 'cape)
     (add-to-list 'completion-at-point-functions #'cape-file)
     (add-to-list 'completion-at-point-functions #'cape-tex)
     (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -154,166 +448,42 @@
     ;;(add-to-list 'completion-at-point-functions #'cape-line)
     )
 
-    ;; Use dabbrev with Corfu!
-  (use-package dabbrev
-    :straight nil
-    ;; Swap M-/ and C-M-/
-    :bind (("M-/" . dabbrev-completion)
-	   ("C-M-/" . dabbrev-expand)))
-
+  ;; Use dabbrev with Corfu!
   ;; A few more useful configurations...
-  (use-package emacs
-    :straight nil
-    :init
-    ;; TAB cycle if there are only few candidates
-    (setq completion-cycle-threshold 3)
+  (setq completion-cycle-threshold 3)
 
-    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-    ;; (setq read-extended-command-predicate
-    ;;       #'command-completion-default-include-p)
+  ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+  ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+  (setq read-extended-command-predicate
+	#'command-completion-default-include-p)
 
-    ;; Enable indentation+completion using the TAB key.
-    ;; `completion-at-point' is often bound to M-TAB.
-    (setq tab-always-indent 'complete))
-#+end_src
-* TODO Keybindings
-- [ ] create more keybindings
-- [ ] Figure out why org mode evil keys doesn't work
-- todo add a kbd for emacs eval
-#+begin_src emacs-lisp
-  (use-package general
-    :config
-    ;;(general-evil-setup t)
-
-    (general-create-definer tt/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-  )
-  
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
-#+end_src 
-** Files
-#+begin_src emacs-lisp
-  (tt/leader-keys
-    "f" '(:ignore t :which-key "files")
-    "ff" '(find-file :which-key "find file"))
-#+end_src
-** TODO Toggles
-- [ ] Make a toggle for line numbers
-#+begin_src emacs-lisp
-  (tt/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    ;;"tw" 'whitespace-mode
-    "tt" '(load-theme :which-key "choose theme")
-    "tv" '(visual-line-mode :which-key "line wrapping")
-
-  )
-#+end_src
-** Windows + Buffers
-- I can steal bindings from: [[file:~/.doom-emacs.d/modules/config/default/+evil-bindings.el]] 
-#+begin_src emacs-lisp
-  (tt/leader-keys
-      "b" '(:ignore t :which-key "buffers")
-      "bb" '(switch-to-buffer :which-key "switch to buffer")
-      "bd" '(kill-this-buffer :which-key "kill this buffer")
-      "bk" '(kill-buffer :which-key "kill buffer")
-  )
-  (tt/leader-keys "w" '(evil-window-map :which-key "window"))
-#+end_src
-** TODO Additional Org bindings
-* TODO Evil mode
-- [ ] You can actually *defer* the loading of evil-mode (and other
-  modes) by attatching a hook to =pre-command-hook= (this makes it so
-  that the functions attatched to the hook are loaded on first user input rather than immediately)
-- [ ] I want to look into how Doom lazy loads evil collection. Doom is
-  really fast because it lazy loads a lot of unnecessary packages, I want to figure out how to do the same. Relevant file: https://github.com/hlissner/doom-emacs/blob/master/modules/editor/evil/init.el 
-#+begin_src emacs-lisp
-      (use-package evil
-	:init
-	(setq evil-want-keybinding nil)
-	:config
-	(evil-mode 1)
-
-    )
-      (use-package evil-collection
-	:after evil
-	;;:disabled  
-	 :init
-	 (evil-collection-init '(calendar dired calc info))
-	)
-      (use-package evil-easymotion
-	:after evil
-	:config
-	;; TODO fix this
-	(evilem-default-keybindings "C-;"))
-      (use-package evil-org
-	:after org
-	:hook (org-mode . evil-org-mode)
-	:init
-	(setq evil-org-use-additional-insert t)
-	:config
-	(require 'evil-org)
-	(require 'evil-org-agenda)
-	(evil-org-set-key-theme '(navigation insert textobjects additional calendar return))
-	(evil-org-agenda-set-keys))
-    (use-package evil-escape
-      :straight  (:host github :repo "hlissner/evil-escape")
-      :after evil
-  ;;    :hook (evil-mode . evil-escape-mode)
-      :init
-	(evil-escape-mode)
-       (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
-	    ;;evil-escape-excluded-major-modes '(neotree-mode treemacs-mode vterm-mode)
-	    evil-escape-key-sequence "fd"
-	    evil-escape-delay 0.15)
-      )
+  ;;   ;; Enable indentation+completion using the TAB key.
+  ;;   ;; `completion-at-point' is often bound to M-TAB.
+  (setq tab-always-indent 'complete)
 #+end_src
 
-* Modeline
-#+begin_src emacs-lisp
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom
-(doom-modeline-height 25)
-  (doom-modeline-bar-width 1)
-  (doom-modeline-icon t)
-  (doom-modeline-major-mode-icon t)
-  (doom-modeline-major-mode-color-icon t)
-  (doom-modeline-buffer-file-name-style 'truncate-upto-project)
-  (doom-modeline-buffer-state-icon t)
-  (doom-modeline-buffer-modification-icon t)
-  (doom-modeline-minor-modes nil)
-  (doom-modeline-enable-word-count nil)
-  (doom-modeline-buffer-encoding t)
-  (doom-modeline-indent-info nil)
-  (doom-modeline-checker-simple-format t)
-  (doom-modeline-vcs-max-length 12)
-  (doom-modeline-env-version t)
-  (doom-modeline-irc-stylize 'identity)
-  (doom-modeline-github-timer nil)
-  (doom-modeline-gnus-timer nil)
-  )
-#+end_src
 
 * TODO Org Mode
 - [ ] Figure out how to improve my org-mode workflow (copy from other people). Also make my org-mode look better (maybe switchable themes).
 - [ ] Try to split up the org-mode workflow into different functions and load/require it (to make it more readable)
+- [ ] Rebind org direction keys to use home row to do M-LEFT, etc
 #+begin_src emacs-lisp
-    (use-package org
-      :straight (:type built-in)
-      :defer t
-      :config
-      ;;(setq org-modules
-	  ;;  '(org-crypt
-	   ;;   org-habit
-	    ;;  org-tempo))
-	(setq org-directory "~/org/"
+  (setup (:pkg org :type built-in)
+    (:also-load org-tempo)
+    (:global "C-c a" org-agenda)
+    ( :bind ;;"C-c a"  org-agenda
+      "C-c x" org-capture
+      "M-y"  org-metaleft
+      "M-o"  org-metaright
+      "M-n"  org-metadown
+      "M-i"  org-metaup)
+      (setq org-modules
+	    '(org-crypt
+	      org-habit
+	      org-bookmark
+	      org-eshell
+	      org-irc))
+      (setq org-directory "~/org/"
 	    org-agenda-files '("~/org/gtd/inbox.org" "~/org/gtd/tickler.org" "~/org/gtd/gtd.org" "~/org/gtd/habits.org")
 	    ;;org-re-reveal-root "/home/thanawat/reveal.js/"
 	    org-export-with-toc nil
@@ -323,134 +493,278 @@
 	    org-ellipsis " ▾"
 	    org-export-with-section-numbers nil
 	    )
-	(setq org-agenda-window-setup 'current-window)
+      (setq org-agenda-window-setup 'current-window)
 
-	(setcar (nthcdr 4 org-emphasis-regexp-components) 10)
-	(org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
-	(setq org-capture-templates
-	  '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-	    ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
-	    ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
-	    ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)))
-    ;; TODO I might remove this to use tempel package instead
-	(require 'org-tempo)
-	(add-to-list 'org-structure-template-alist '("sh" . "src sh"))
-	(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-	(add-to-list 'org-structure-template-alist '("hs" . "src haskell"))
-    )
+      (setcar (nthcdr 4 org-emphasis-regexp-components) 10)
+      (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+      ;; WORKFLOW stuff
+      (setq org-capture-templates
+	    '(("t" "Todos" entry (file+headline "gtd/inbox.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+	      ("T" "Tickler" entry (file+headline "gtd/tickler.org" "Inbox") "* TODO %?\n%i\n%a" :prepend t)
+	      ("r" "Resources" entry (file+headline "gtd/resources.org" "Inbox") "* TODO %?" :prepend t)
+	      ("e" "Emacs + Vim tricks" entry (file+headline "emacs-tips.org" "Inbox") "* TODO %?" :prepend t)))
+      ;; TODO I might remove this to use tempel package instead
+      (setq
+       org-refile-targets '(("~/org/gtd/gtd.org"  :maxlevel . 2)
+			    ("~/org/gtd/inbox.org"  :maxlevel . 1)
+			    ("~/org/gtd/someday.org"  :maxlevel . 1)
+			    ("~/org/gtd/resources.org"  :maxlevel . 2))
+       org-refile-use-outline-path t
+       )
+      ;;TODO Move this somewhere else
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '(
+	 (emacs-lisp . t)
+	 (dot . t))) ; this line activates dot
+
+      (setq org-confirm-babel-evaluate 'nil)
+      )
 #+end_src
-** Org Appearance
+
+** org tempo
 #+begin_src emacs-lisp
-  (use-package org-modern
-    :after org
-    :hook ((org-mode . org-modern-mode) (org-agenda-finalize . org-modern-agenda))
+  (setup org-tempo
+    (:when-loaded
+      (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+      (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+      (add-to-list 'org-structure-template-alist '("hs" . "src haskell"))))
+
+#+end_src 
+** org Appearance
+#+begin_src emacs-lisp
+  (setup (:pkg org-modern)
+    (:hook-into org-mode)
+    (:with-hook org-agenda-finalize-hook (:hook org-modern-agenda))
     )
 
-  (use-package org-appear
-    :after org
-    :straight (:type git :host github :repo "awth13/org-appear")
-    :hook (org-mode . org-appear-mode))
+  (setup (:pkg org-appear :host github :repo "awth13/org-appear")
+	       (:hook-into org-mode))
 #+end_src
 ** Org Agenda
 *** Org recur
 #+begin_src emacs-lisp
-  (use-package org-recur
-    :hook ((org-mode . org-recur-mode)
-	 (org-agenda-mode . org-recur-agenda-mode))
-    ;; TODO make this specific to org-recur mode
-    :config
-
-    (define-key org-recur-mode-map (kbd "C-c d") 'org-recur-finish)
-    (define-key org-recur-agenda-mode-map (kbd "C-c d") 'org-recur-finish)
-    (setq org-recur-finish-done t
-	org-recur-finish-archive t)
+  (setup (:pkg org-recur)
+    (:hook-into org-mode)
+    (:with-hook org-agenda-mode (:hook org-recur-agenda-mode))
+    (:bind "C-c d" org-recur-finish)
+    (:with-mode org-recur-agenda-mode (:bind "C-c d" org-recur-finish))
+    (:option 
+     org-recur-finish-done t
+     org-recur-finish-archive t)
     )
 #+end_src
 
 *** Super Agenda
-#+begin_src elisp
-  (use-package org-super-agenda
-    :after org-agenda
-    :hook (org-agenda-mode . org-super-agenda-mode)
-    :init
+#+begin_src emacs-lisp
+  (setup  (:pkg org-super-agenda)
+  
+    (:hook-into org-agenda-mode)
+    (setq org-todo-keywords
+	  '((sequence
+	     "TODO(t)"  ; A task that needs doing & is ready to do
+	     "PROJ(p)"  ; A project, which usually contains other tasks
+	     "LOOP(r)"  ; A recurring task
+	     "STRT(s)"  ; A task that is in progress
+	     "WAIT(w)"  ; Something external is holding up this task
+	     "HOLD(h)"  ; This task is paused/on hold because of me
+	     "IDEA(i)"  ; An unconfirmed and unapproved task or notion
+	     "|"
+	     "DONE(d)"  ; Task successfully completed
+	     "KILL(k)") ; Task was cancelled, aborted or is no longer applicable
+	    ))
     (setq org-agenda-skip-scheduled-if-done t
-	org-agenda-skip-deadline-if-done t
-	org-agenda-include-deadlines t
-	org-agenda-block-separator nil
-	org-agenda-tags-column 100 ;; from testing this seems to be a good value
-	org-agenda-compact-blocks t)
+	  org-agenda-skip-deadline-if-done t
+	  org-agenda-include-deadlines t
+	  org-agenda-block-separator nil
+	  org-agenda-tags-column 100 ;; from testing this seems to be a good value
+	  org-agenda-compact-blocks t)
     (setq org-super-agenda-groups
 	  '(;; Each group has an implicit boolean OR operator between its selectors.
 	    (:name "Today"  ; Optionally specify section name
-	     :time-grid t  ; Items that appear on the time grid
-	     :todo "TODAY")  ; Items that have this TODO keyword
+		   :time-grid t  ; Items that appear on the time grid
+		   :todo "TODAY")  ; Items that have this TODO keyword
 	    (:name "Important"
-	     :priority "A")
+		   :priority "A")
 	    ;; Set order of multiple groups at once
 	    (:name "Shopping"
-	     :tag "shopping")
+		   :tag "shopping")
 	    (:name "Recipes"
-	     ;; Multiple args given in list with implicit OR
-	     :tag ("food"))
+		   ;; Multiple args given in list with implicit OR
+		   :tag ("food"))
 	    (:name "Habits"
-	     :habit t)
+		   :habit t)
 	    (:name "School"
-	     :tag "school")
+		   :tag "school")
 	    (:name "coding"
-	     :tag "coding")
+		   :tag "coding")
 
 	    (:name "next"
-	     :tag "next"
-	     :scheduled nil)
+		   :tag "next"
+		   :scheduled nil)
 	    ;; Groups supply their own section names when none are given
 	    (:todo "WAITING" :order 8)  ; Set order of this section
 	    (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
-	     ;; Show this group at the end of the agenda (since it has the
-	     ;; highest number). If you specified this group last, items
-	     ;; with these todo keywords that e.g. have priority A would be
-	     ;; displayed in that group instead, because items are grouped
-	     ;; out in the order the groups are listed.
-	     :order 9)
+		   ;; Show this group at the end of the agenda (since it has the
+		   ;; highest number). If you specified this group last, items
+		   ;; with these todo keywords that e.g. have priority A would be
+		   ;; displayed in that group instead, because items are grouped
+		   ;; out in the order the groups are listed.
+		   :order 9)
 	    (:priority<= "B"
-	     ;; Show this section after "Today" and "Important", because
-	     ;; their order is unspecified, defaulting to 0. Sections
-	     ;; are displayed lowest-number-first.
-	     :order 1)
+			 ;; Show this section after "Today" and "Important", because
+			 ;; their order is unspecified, defaulting to 0. Sections
+			 ;; are displayed lowest-number-first.
+			 :order 1)
 	    ;; After the last group, the agenda will display items that didn't
 	    ;; match any of these groups, with the default order position of 99
 	    ))
     (setq
-      org-super-agenda-header-map (make-sparse-keymap)
-      org-agenda-custom-commands '(("h" "my custom agenda view"
-					 ((alltodo "" ((org-agenda-overriding-header "")
-						       (org-super-agenda-groups
-							'(
-							  (:name "Important"
+     org-super-agenda-header-map (make-sparse-keymap)
+     org-agenda-custom-commands '(("h" "my custom agenda view"
+				   ((alltodo "" ((org-agenda-overriding-header "")
+						 (org-super-agenda-groups
+						  '(
+						    (:name "Important"
 							   :priority "A")
-							  (:name "Projects"
+						    (:name "Projects"
 							   :todo "PROJ"
 							   :children t
 							   :order 1)
-							  (:name "To Process"
+						    (:name "To Process"
 							   :file-path "inbox\\.org"
 							   :order 2)
-							  (:name "School"
+						    (:name "School"
 							   :tag "school"
 							   :order 3)
-							  (:order-multi (2 (:name "Shopping for Food items"
+						    (:order-multi (2 (:name "Shopping for Food items"
 									    ;; Boolean AND group matches items that match all subgroups
 									    :and (:tag "shopping"))
-									   (:name "Food and cooking"
+								     (:name "Food and cooking"
 									    ;; Multiple args given in list with implicit OR
 									    :tag ("food" "cooking"))))
-							  (:discard (:anything t))
-							  )))))
-					 ))
-	  )
+						    (:discard (:anything t))
+						    )))))
+				   )
+				  ("r" "Need to do + Want to do"
+				   ((tags-todo "need|want"  ((org-agenda-overriding-header "Need to do + Want to do")
+							     (org-super-agenda-groups
+							      '(
+								(:name "Need to do"
+								       :tag "need")
+								(:name "Want to do"
+								       :tag "want")
+								(:discard (:anything t))
+								))))))))
 
-
-
-    :config
-    (org-super-agenda-mode)
     )
 #+end_src
+
+** Roam
+#+begin_src emacs-lisp
+  (setup (:pkg org-roam)
+    (:option
+    org-roam-directory (file-truename "~/org/roam/")
+    org-roam-completion-everywhere t
+    org-roam-db-location "~/org/roam/org-roam.db"
+    org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag))
+    )
+    ;; TODO do some stuf
+    (:bind "C-c n l"  org-roam-buffer-toggle
+	   "C-c n f"  org-roam-node-find
+	   "C-c n g"  org-roam-graph
+	   "C-c n i"  org-roam-node-insert
+	   "C-c n c"  org-roam-capture
+	   ;; Dailies
+	   "C-c n j"  org-roam-dailies-capture-today)
+    (:hook org-roam-db-autosync-mode))
+#+end_src
+* Openwith
+:PROPERTIES:
+:ID:       b09c4524-2f5c-4659-8741-6accd88e1ae3
+:END:
+#+BEGIN_SRC emacs-lisp
+  ;; Opens video file in mpv
+  (setup (:pkg openwith)
+    (:option openwith-associations '(("\\.mp4\\'" "mpv" (file)) ("\\.webm\\'" "mpv" (file)) ("\\.mkv\\'" "mpv" (file)) ("\\.pdf\\'" "zathura" (file))))
+    (openwith-mode t))
+#+END_SRC
+
+* Programming 
+** TODO Setup
+
+- [ ] I still need to figure out how vertico completion integrates with lsp
+- [ ] I might also want to add my own keybindings for lsp commands (or learn them)
+- This sets up flycheck, lsp, dap, and hl-todo. This functionality is shared by all programing modes
+#+begin_src emacs-lisp
+
+  (setup (:pkg flycheck)
+    (:hook-into lsp-mode))
+  (setup (:pkg lsp-mode)
+    (:option
+     lsp-headerline-breadcrumb-enable nil
+     lsp-completion-provider :none)
+    (:hook-into cc-mode haskell-mode)
+    (defun tt/lsp-mode-setup-completion ()
+      (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+	    '(orderless))) ;; Configure orderless
+    (:with-mode lsp-completion-mode (:hook tt/lsp-mode-setup-completion))
+
+    )
+
+  (setup (:pkg lsp-ui)
+    (:hook-into lsp-mode)
+    (:option
+     lsp-ui-sideline-enable t
+     lsp-ui-sideline-show-hover nil
+     lsp-ui-doc-position 'bottom)
+    (:hook lsp-ui-doc-show))
+  ;; dap is dependent on lsp-treemacs
+  (setup (:pkg dap-mode)
+    (:option lsp-enable-dap-auto-configure nil)
+    (:hook dap-ui-mode dap-tooltip-mode dap-node-setup))
+  ;;:init
+  ;; (dap-ui-mode 1)
+  ;; (dap-tooltip-mode 1)
+  ;; (require 'dap-node)
+  ;; (dap-node-setup))
+  (setup (:pkg hl-todo)
+    (:option  hl-todo-keyword-faces
+	      '(("TODO"   . "#FF0000")
+		("FIXME"  . "#FF0000")
+		("DEBUG"  . "#A020F0")
+		("GOTCHA" . "#FF4500")
+		("STUB"   . "#1E90FF")))
+    (global-hl-todo-mode))
+#+end_src
+** Tree Sitter
+#+begin_src emacs-lisp
+  (setup (:pkg tree-sitter))
+  (setup (:pkg tree-sitter-langs))
+
+#+end_src
+** C++/C
+
+#+begin_src emacs-lisp
+  (setup (:pkg ccls)
+    (:hook-into c-mode c++-mode)
+    (:hook lsp))
+#+end_src
+
+** Graphviz
+#+begin_src emacs-lisp
+  (setup (:pkg graphviz-dot-mode)
+    (:option graphviz-dot-indent-width 4))
+#+end_src
+
+** Nix
+#+begin_src emacs-lisp
+  (setup (:pkg nix-mode)
+    (:file-match "\\.nix\\'"))
+  
+#+end_src
+
+* TODO Wishlist
+- [ ] https://github.com/emacs-tw/awesome-emacs
+
+  
