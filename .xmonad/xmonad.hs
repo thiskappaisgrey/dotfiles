@@ -12,6 +12,7 @@ import           XMonad.Hooks.ManageDocks       ( ToggleStruts(..)
                                                 )
 import qualified XMonad.StackSet               as W
 
+
 -- Layouts
 import           XMonad.Layout.LayoutModifier
 import           XMonad.Layout.Magnifier
@@ -29,7 +30,9 @@ import           XMonad.Layout.Spacing
 import           System.IO
 import           XMonad.Hooks.EwmhDesktops      ( ewmh
                                                 , fullscreenEventHook
+                                                , ewmhFullscreen
                                                 )
+import           XMonad.Hooks.StatusBar.PP     (filterOutWsPP)
 -- Prompts
 import           XMonad.Prompt
 import           XMonad.Prompt.AppLauncher     as AL
@@ -47,7 +50,7 @@ import           XMonad.Util.Run                ( runInTerm
                                                 , spawnPipe
                                                 )
 import           XMonad.Util.SpawnOnce
-import           XMonad.Util.WorkspaceCompare   ( getSortByIndex )
+import           XMonad.Util.WorkspaceCompare   ( getSortByIndex, filterOutWs )
 -- import           XMonad.Prompt.XMonad
 
 -- Data
@@ -66,6 +69,8 @@ import           XMonad.Util.NamedActions
 
 import           System.Exit
 
+-- import System.Taffybar.Support.PagerHints (pagerHints)
+
 -- Default apps
 myTerminal = "alacritty"
 myBrowser = "brave --profile-directory=\"Default\""
@@ -74,12 +79,9 @@ myBrowser2 = "nyxt"
 myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 
 -- Copy-pasted from Mr. Distrotube! Thank you! https://gitlab.com/dwt1/dotfiles/-/blob/master/.xmonad/xmonad.hs
--- mySpacing
---   :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
--- mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
 -- Below is a variation of the above except no borders are applied
 -- if fewer than two windows. So a single window has no gaps.
--- For spaces between windows. Not used for now!
+-- For spaces between windows. 
 mySpacing
   :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
 mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
@@ -88,12 +90,15 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 --                           Layouts                           --
 -----------------------------------------------------------------
 
-myLayout = onWorkspace wsFloat simpleFloat
+myLayout =
+  onWorkspace wsFloat simpleFloat
+  $ onWorkspace "shb" (mirrorTall2 ||| magnified ||| full) -- TODO delete once I finish the book
+  $ lessBorders Never
   $ avoidStruts (mirrorTall ||| mirrorTall2 ||| magnified ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
-  tiled = renamed [Replace "tall"] $ smartBorders $ ResizableTall nmaster
+  tiled = renamed [Replace "tall"] $ mySpacing 5 $ ResizableTall nmaster
                                                                   delta
                                                                   ratio
                                                                   []
@@ -109,7 +114,7 @@ myLayout = onWorkspace wsFloat simpleFloat
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
   magnified =
-    renamed [Replace "magified"] $ smartBorders $ magnifiercz' 1.4 $ Tall
+    renamed [Replace "magified"] $ mySpacing 5 $ smartBorders $ magnifiercz' 1.4 $ Tall
       nmaster
       delta
       ratio
@@ -120,8 +125,8 @@ myLayout = onWorkspace wsFloat simpleFloat
     delta   = 3 / 100
     -- Default proportion of screen occupied by master pane
     ratio   = 60 / 100
-  mirrorTall = Mirror (Tall 1 (3/100) (4/5))
-  mirrorTall2 = Mirror (Tall 2 (3/100) (4/5))
+  mirrorTall = mySpacing 5 $ Mirror (Tall 1 (3/100) (4/5))
+  mirrorTall2 = mySpacing 5 $ Mirror (Tall 2 (3/100) (4/5))
 -- Number of windows in a workspace, not really needed though
 windowCount :: X (Maybe String)
 windowCount =
@@ -143,29 +148,35 @@ wsTerm = "term"
 wsFloat = "float"
 wsGame = "game"
 wsMusic = "music"
+wsSchool = "school"
+wsGuitar = "guitar"
+wsXmonad = "xmonad"
 -- wsVidEdit = "vid-edit"
 -- wsVirt = "virt"
-myWorkspaces = [wsMain, wsTerm, wsFloat, wsGame]
-
+myWorkspaces = [wsMain, wsSchool, wsMusic, wsGame, wsXmonad, wsTerm ]
 myProjects :: [Project]
 myProjects =
   [ Project
     { projectName      = wsMain
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
-                           spawnOn
-                             wsMain
+                           spawn
                              (myEditor ++ " --eval \"(org-agenda-list)\"")
     }
   , Project
     { projectName      = wsTerm
     , projectDirectory = "~/code"
     , projectStartHook = Just $ do
-                           spawnOn wsTerm myTerminal
+                           spawn myTerminal
+                           spawnOn wsMain myEditor
                            -- runInTerm "-t ytop" "ytop"
     }
-  , Project { projectName      = wsFloat
-            , projectDirectory = "~"
+  , Project { projectName = wsSchool
+            , projectDirectory = "~/code/spring-2022/"
+            , projectStartHook = Just $ do
+                spawnOn wsSchool (myEditor ++ " ~/code/spring-2022/")
+            }
+  , Project { projectName      = wsFloat            , projectDirectory = "~"
             , projectStartHook = Nothing
             }
   , Project
@@ -175,10 +186,45 @@ myProjects =
                            spawnOn wsGame "steam"
     }
   , Project
+    { projectName      = wsGuitar
+    , projectDirectory = "~/"
+    , projectStartHook = Just $ do
+        
+                           spawn "guitarix"
+                           spawn (myEditor ++ " --eval \"(org-agenda nil \\\"g\\\")\"")
+    }
+  , Project
     { projectName      = wsMusic
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
                            spawnOn wsMusic "brave --profile-directory=\"youtube\""
+    }
+  -- for hacking on xmonad and taffybar (which I should probably include in )
+  , Project
+    { projectName      = wsXmonad
+    , projectDirectory = "~/.xmonad"
+    , projectStartHook = Just $ do
+                           spawnOn wsTerm (myTerminal ++ " -t hoogle -e direnv exec ~/.xmonad hoogle server --local")
+                           spawn (myEditor ++ " ~/.xmonad/xmonad.hs")
+                           spawn (myEditor ++ " ~/.config/taffybar/taffybar.hs")
+    }
+  , Project
+  -- simple haskell handbook
+    { projectName      = "shb"
+    , projectDirectory = "~/code/quad/"
+    , projectStartHook = Just $ do
+                           -- spawnOn wsTerm (myTerminal ++ " -t hoogle -e direnv exec ~/.xmonad hoogle server --local")
+                           spawn (myEditor ++ " ~/code/quad/")
+                           spawn myTerminal
+                           spawn "zathura ~/books/simple-haskell-book.pdf"
+    }
+  , Project
+  -- simple haskell handbook
+    { projectName      = "exercism"
+    , projectDirectory = "~/code/exercism/"
+    , projectStartHook = Just $ do
+                           spawn (myEditor ++ " ~/code/exercism/")
+                           spawn myTerminal
     }
   ]
 
@@ -231,23 +277,22 @@ myScratchPads =
 
 -- NOTE For later, emacsclient -c -e "(=rss)" to launch emacs based applications.
 -- TODO Extract NamedActions and put it into a custom addDescrKeys so that I can use it for my own version of Which-Key
--- Big thanks to https://github.com/altercation/dotfiles-tilingwm/blob/master/.xmonad/xmonad.hs !
 myKeys conf =
   let
     subKeys str ks = subtitle str : mkNamedKeymap conf ks
     -- screenKeys = ["w", "v", "z"]
-    dirKeys   = ["n", "i", "y", "o"]
-    arrowKeys = ["<D>", "<U>", "<L>", "<R>"]
+    dirKeys = ["n", "i", "o", "h"]
     wsKeys    = map show $ [1 .. 9] ++ [0]
     dirs      = [D, U, L, R]
+-- I copied a bit of the structure from https://github.com/altercation/dotfiles-tilingwm/blob/master/.xmonad/xmonad.hs ! 
     zipM m nm ks as f = zipWith (\k d -> (m ++ k, addName nm $ f d)) ks as
     zipM' m nm ks as f b = zipWith (\k d -> (m ++ k, addName nm $ f d b)) ks as
-    nextNonEmptyWS = findWorkspace getSortByIndexNoSP Next HiddenNonEmptyWS 1
+    nextNonEmptyWS = findWorkspace getSortByIndexNoSP Next (hiddenWS :&: Not emptyWS) 1
       >>= \t -> windows . W.view $ t
-    prevNonEmptyWS = findWorkspace getSortByIndexNoSP Prev HiddenNonEmptyWS 1
+    prevNonEmptyWS = findWorkspace getSortByIndexNoSP Prev (hiddenWS :&: Not emptyWS) 1
       >>= \t -> windows . W.view $ t
     getSortByIndexNoSP =
-      fmap (. namedScratchpadFilterOutWorkspace) getSortByIndex
+      fmap (. (filterOutWs [scratchpadWorkspaceTag])) getSortByIndex
   in
     subKeys
       "System"
@@ -256,7 +301,7 @@ myKeys conf =
         -- use amixer to set the microphone volume: https://askubuntu.com/questions/27021/setting-microphone-input-volume-using-the-command-line
         -- xbacklight controls the brightness: https://wiki.archlinux.org/index.php/backlight#xbacklight and https://askubuntu.com/questions/715306/xbacklight-no-outputs-have-backlight-property-no-sys-class-backlight-folder
         -- xf86-video-intel
-    -- Audio, use pulseaudio to change volume
+    -- Audio, use pulseaudio to change volume.. TODO change to use xmonad estras maybe
         ( "<XF86AudioMute>"
         , addName "Toggle Mute"
           $ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle"
@@ -277,7 +322,7 @@ myKeys conf =
       , ("<XF86AudioPrev>", addName "Prev Song" $ spawn "playerctl prev")
       , ("<XF86AudioNext>", addName "Next Song" $ spawn "playerctl next")
   -- BRIGHTNESS
-  -- brigntnessctl needs to be installed to work
+  -- TODO change to use xmonad-extras instead.. brigntnessctl needs to be installed to work
       , ( "<XF86MonBrightnessUp>"
         , addName "Raise Brightness" $ spawn "brightnessctl s +10%"
         )
@@ -357,26 +402,7 @@ myKeys conf =
               )
             ]
            ++ zipM' "M-"   "Navigate window" dirKeys   dirs windowGo   True
-    -- ++ zipM' "M-S-"               "Move window"                               dirKeys dirs windowSwap True
            ++ zipM' "M-C-" "Move window"     dirKeys   dirs windowSwap True
-           -- ++ zipM "M-C-"
-           --         "Merge w/sublayout"
-           --         dirKeys
-           --         dirs
-           --         (sendMessage . pullGroup)
-           ++ zipM' "M-"   "Navigate screen" arrowKeys dirs screenGo   True
-           ++ zipM' "M-S-"
-                    "Move window to screen"
-                    arrowKeys
-                    dirs
-                    windowToScreen
-                    True
-           ++ zipM' "M-S-"
-                    "Swap workspace to screen"
-                    arrowKeys
-                    dirs
-                    screenSwap
-                    True
            )
     ^++^ subKeys
            "Monitors"
@@ -436,7 +462,7 @@ myKeys conf =
 -- namedScratchpadFilterOutWorkspacePP $ - if I want to filter out named scratchpads
 -- Pretty fg
 myPP :: PP
-myPP = namedScratchpadFilterOutWorkspacePP $ def
+myPP = (filterOutWsPP [scratchpadWorkspaceTag]) $ def
   { ppUrgent          = xmobarColor "red" "yellow"
   , ppCurrent         = xmobarColor "#4C566A" "#A3BE8C" . wrap "| " " |" -- Current workspace in xmobar
   , ppVisible         = xmobarColor "#A3BE8C" ""                -- Visible but not current workspace
@@ -452,19 +478,24 @@ myPP = namedScratchpadFilterOutWorkspacePP $ def
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "~/.fehbg &"
-  spawnOnce "emacs --daemon"
-  spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
-  -- spawnOnce "status-notifier-watcher &"
-  -- spawnOnce "taffybar &"
-  spawnOnce "caffeine &"
-  spawnOnce "flameshot &"
+-- spawnOnce "emacs --daemon"
+  -- spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
+  -- TODO add more useful daemons
+  -- spawnOnce "caffeine &"
   spawnOnce "dunst &"
-
+  spawnOnce "/home/thanawat/.local/bin/trays.sh"
+  spawnOnce "taffybar &"
+  -- order matters when spawning theses
+  -- spawnOnce "nm-applet --indicator &"
+  -- spawnOnce "flameshot &"
+  -- spawnOnce "blueman-applet &"
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
 --- nix-shell -p xorg.xwininfo - this program gets the window name!!
 myManageHook :: ManageHook
-myManageHook = namedScratchpadManageHook myScratchPads <+> manageHook def
+myManageHook = manageSpawn <+> namedScratchpadManageHook myScratchPads <+> manageHook def
 
+
+-- TODO I could write my own program to show the keybindings prettily
 showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
 showKeybindings x = addName "Show Keybindings" $ io $ do
   h <- spawnPipe "zenity --text-info --font=terminus"
@@ -473,26 +504,28 @@ showKeybindings x = addName "Show Keybindings" $ io $ do
   return ()
 main :: IO ()
 main = do
-  xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
-  xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
+  -- xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
+  -- xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad
     $ dynamicProjects myProjects
-    $ addDescrKeys' ((mod4Mask .|. shiftMask, xK_slash), showKeybindings) myKeys
+    $ withNavigation2DConfig def -- for navigation keys to work properly
+    $ addDescrKeys' ((mod4Mask, xK_slash), xMessage) myKeys
+    $ ewmhFullscreen
     $ ewmh
+    -- $ pagerHints
     $ docks def
         { manageHook         = myManageHook <+> manageDocks
-        , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
-                                                          >> hPutStrLn xmproc1 x
-                                          }
+        -- , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
+        --                                                   >> hPutStrLn xmproc1 x
+        --                                   }
         , startupHook        = myStartupHook
         , terminal           = myTerminal
         , modMask            = mod4Mask
-        -- No borders because picom transparency makes it obvious which window is focused
-        , borderWidth        = 0
+        , borderWidth        = 2
                         -- do `toWorkspaces myWorkspaces` for treeselect
         , workspaces         = myWorkspaces
-        , handleEventHook    = handleEventHook def <+> fullscreenEventHook
+        , handleEventHook    = handleEventHook def
         , layoutHook         = myLayout
-        , focusedBorderColor = "#D8DEE9"
-        , normalBorderColor  = "#434C5E"
+        , focusedBorderColor = "#BF616A"
+        , normalBorderColor  = "#5E81AC"
         }

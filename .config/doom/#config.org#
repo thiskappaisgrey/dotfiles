@@ -12,30 +12,29 @@
 :END:
 Keep for refrence later..
 #+BEGIN_SRC elisp
-  ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-  ;; Here are some additional functions/macros that could help you configure Doom:
-  ;;
-  ;; - `load!' for loading external *.el files relative to this one
-  ;; - `use-package' for configuring packages
-  ;; - `after!' for running code after a package has loaded
-  ;; - `add-load-path!' for adding directories to the `load-path', where Emacs
-  ;;   looks when you load packages with `require' or `use-package'.
-  ;; - `map!' for binding new keys
-  ;;
-  ;; To get information about any of these functions/macros, move the cursor over
-  ;; the highlighted symbol at press 'K' (non-evil users must press 'C-c g k').
-  ;; This will open documentation for it, including demos of how they are used.
-  ;;
-  ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
-  ;; they are implemented.
-
+;; Here are some additional functions/macros that could help you configure Doom:
+;;
+;; - `load!' for loading external *.el files relative to this one
+;; - `use-package' for configuring packages
+;; - `after!' for running code after a package has loaded
+;; - `add-load-path!' for adding directories to the `load-path', where Emacs
+;;   looks when you load packages with `require' or `use-package'.
+;; - `map!' for binding new keys
+;;
+;; To get information about any of these functions/macros, move the cursor over
+;; the highlighted symbol at press 'K' (non-evil users must press 'C-c g k').
+;; This will open documentation for it, including demos of how they are used.
+;;
+;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
+;; they are implemented.
 #+END_SRC
-* COMMENT Personal Info/Email setup
+* Personal Info/Email setup
 :PROPERTIES:
 :ID:       f419a1b4-b509-4eb1-b4c4-5d8f4c63f304
 :END:
-#+BEGIN_SRC elisp
+#+BEGIN_RC elisp
 (setq user-full-name "Thanawat Techaumnuaiwit")
 (after! mu4e
   (setq!  mu4e-get-mail-command "mbsync -c ~/.config/mbsync/mbsyncrc -a")
@@ -73,7 +72,7 @@ Keep for refrence later..
 
 #+RESULTS:
 
-* COMMENT Aesthetics
+* Aesthetics
 ** Font
 :PROPERTIES:
 :ID:       4157cc3a-b68f-4bfa-a505-c861a0aef1ee
@@ -133,7 +132,7 @@ Keep for refrence later..
 (display-battery-mode)
 #+END_SRC
 
-* COMMENT Dashboard
+* Dashboard
 :PROPERTIES:
 :ID:       b06f3fe0-2639-44e5-bd78-6d7e4e71087b
 :END:
@@ -158,7 +157,7 @@ Keep for refrence later..
 ;;   )
 #+end_src
 
-* COMMENT Keybindings
+* Keybindings
 :PROPERTIES:
 :ID:       2165d094-6bbd-4ecd-bde5-d80f86f679fc
 :END:
@@ -195,7 +194,7 @@ Keep for refrence later..
   :nvie "C-{" #'sp-backward-slurp-sexp
   :nvie "C-}" #'sp-backward-barf-sexp)
 #+end_src
-* COMMENT Org
+* Org
 :PROPERTIES:
 :ID:       8fd32456-2d0a-4854-a8e2-9bb3fe133761
 :END:
@@ -547,7 +546,7 @@ Keep for refrence later..
     (if server (setq langtool-bin server)))
 #+end_src
 
-* COMMENT Nov.el
+* Nov.el
 :PROPERTIES:
 :ID:       239c374f-981f-4cc6-8f68-5f63073a176f
 :END:
@@ -563,7 +562,7 @@ For reading EPUBs.
   (setq nov-variable-pitch nil))
 #+END_SRC
 
-* COMMENT Rss(elfeed)
+* Rss(elfeed)
 :PROPERTIES:
 :ID:       3de404f9-c996-49ef-8f80-92c249618646
 :END:
@@ -591,7 +590,7 @@ For reading EPUBs.
       :g "M-v" #'my/elfeed-view-mpv
       )
 #+END_SRC
-* COMMENT Code
+* Code
 ** lsp
 :PROPERTIES:
 :ID:       e3392438-559e-491d-8dfd-5ecc0ff00326
@@ -668,7 +667,7 @@ For reading EPUBs.
   (setq graphviz-dot-indent-width 4))
 #+end_src
 
-* COMMENT Presentations
+* Presentations
 :PROPERTIES:
 :ID:       623320c2-057a-4d84-8b42-b411a7b271e5
 :END:
@@ -679,7 +678,7 @@ For reading EPUBs.
         )
 (after! org-tree-slide (setq org-tree-slide-never-touch-face t))
 #+END_SRC
-* COMMENT Openwith
+* Openwith
 :PROPERTIES:
 :ID:       b09c4524-2f5c-4659-8741-6accd88e1ae3
 :END:
@@ -693,7 +692,7 @@ For reading EPUBs.
   (setq openwith-associations '(("\\.mp4\\'" "mpv" (file)) ("\\.webm\\'" "mpv" (file)) ("\\.mkv\\'" "mpv" (file))))
   )
 #+END_SRC
-* COMMENT IRC
+* IRC
 :PROPERTIES:
 :ID:       55b2b7a8-7165-4fc0-8de4-44945b216883
 :END:
