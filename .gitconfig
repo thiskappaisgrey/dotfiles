@@ -11,3 +11,5 @@
 	editor = nvim
 [push]
 	default = simple
+[init]
+	defaultBranch = main

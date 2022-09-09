@@ -42,6 +42,9 @@ import           XMonad.Prompt.Input
 -- import           XMonad.Prompt.Man
 import           XMonad.Prompt.Pass
 import           XMonad.Prompt.Shell            ( shellPrompt )
+import           XMonad.Prompt.Window
+
+
 import           XMonad.Util.EZConfig
 import           XMonad.Util.NamedScratchpad
 -- Utils
@@ -58,7 +61,8 @@ import           Data.Char                      ( isSpace )
 import           Data.List
 
 import           XMonad.Actions.CycleWS
-import           XMonad.Actions.DynamicProjects
+import           MyXMonad.Actions.DynamicProjects
+  
 import           XMonad.Actions.DynamicWorkspaceOrder
 import           XMonad.Actions.Navigation2D
 import           XMonad.Actions.SpawnOn
@@ -69,12 +73,34 @@ import           XMonad.Util.NamedActions
 
 import           System.Exit
 
+-- import           XMonad.ShowKbs (hello)
+import XMonad.Actions.CopyWindow
+
+import XMonad.Hooks.ManageHelpers  (doRectFloat)
+
+-- Taffybar as a haskell package is broken in nixpkgs, but I just need
+-- this ONE package Too lazy to setup an overlay, so just copy-paste
+-- the file into lib instead
+import System.Taffybar.Support.PagerHints (pagerHints)
+
+
+  
+import Data.Ratio  ( (%) )
+-- import XMonad.Layout.Simplest
+import           Data.Maybe (isJust)
 -- import System.Taffybar.Support.PagerHints (pagerHints)
+  
+-- import XMonad.Actions.Volume
+
+
 
 -- Default apps
 myTerminal = "alacritty"
-myBrowser = "brave --profile-directory=\"Default\""
-myBrowser2 = "nyxt"
+myBrowser2 = "brave --profile-directory=\"Default\""
+myBrowser = "firefox"
+-- myBrowser2 = "nyxt"
+
+
 -- This will start the emacs server if not already started
 myEditor = "emacsclient -create-frame --alternate-editor=\"\""
 
@@ -92,9 +118,11 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 
 myLayout =
   onWorkspace wsFloat simpleFloat
-  $ onWorkspace "shb" (mirrorTall2 ||| magnified ||| full) -- TODO delete once I finish the book
+  $ onWorkspace wsGame (lessBorders Never $ avoidStruts Full) -- on the game workspace, only have the full layout
+  -- these are my main layouts
   $ lessBorders Never
-  $ avoidStruts (mirrorTall ||| mirrorTall2 ||| magnified ||| full)
+  $ avoidStruts (-- Simplest |||
+                 mirrorTall ||| mirrorTall2 ||| magnified ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
@@ -114,7 +142,7 @@ myLayout =
   full = noBorders Full
   -- Magnified layout with one window taking up 60% of screen
   magnified =
-    renamed [Replace "magified"] $ mySpacing 5 $ smartBorders $ magnifiercz' 1.4 $ Tall
+    renamed [Replace "magified"] $ mySpacing 5 $   magnifiercz' 1.4 $ Tall
       nmaster
       delta
       ratio
@@ -153,6 +181,9 @@ wsGuitar = "guitar"
 wsXmonad = "xmonad"
 -- wsVidEdit = "vid-edit"
 -- wsVirt = "virt"
+
+-- TODO maybe have a keybind to bring up the relevant todo list for the day?
+-- Also, write an agenda view that shows the tasks that need to be done for the day + other stuff to do on the side?
 myWorkspaces = [wsMain, wsSchool, wsMusic, wsGame, wsXmonad, wsTerm ]
 myProjects :: [Project]
 myProjects =
@@ -160,8 +191,7 @@ myProjects =
     { projectName      = wsMain
     , projectDirectory = "~/"
     , projectStartHook = Just $ do
-                           spawn
-                             (myEditor ++ " --eval \"(org-agenda-list)\"")
+                           spawn (myEditor ++  " --eval \"(org-agenda nil \\\"h\\\")\"" )
     }
   , Project
     { projectName      = wsTerm
@@ -206,20 +236,18 @@ myProjects =
     , projectStartHook = Just $ do
                            spawnOn wsTerm (myTerminal ++ " -t hoogle -e direnv exec ~/.xmonad hoogle server --local")
                            spawn (myEditor ++ " ~/.xmonad/xmonad.hs")
-                           spawn (myEditor ++ " ~/.config/taffybar/taffybar.hs")
+                           -- spawn (myEditor ++ " ~/.config/taffybar/taffybar.hs")
     }
   , Project
-  -- simple haskell handbook
-    { projectName      = "shb"
-    , projectDirectory = "~/code/quad/"
+    { projectName      = "website"
+    , projectDirectory = "~/code/new-website/"
     , projectStartHook = Just $ do
-                           -- spawnOn wsTerm (myTerminal ++ " -t hoogle -e direnv exec ~/.xmonad hoogle server --local")
-                           spawn (myEditor ++ " ~/code/quad/")
-                           spawn myTerminal
-                           spawn "zathura ~/books/simple-haskell-book.pdf"
+                           spawnOn wsTerm (myTerminal ++ " -t hoogle -e direnv exec ~/code/new-website hoogle server --local")
+                           spawn (myEditor ++ " ~/code/new-website/")
+                           -- spawn (myEditor ++ " ~/.config/taffybar/taffybar.hs")
     }
   , Project
-  -- simple haskell handbook
+  -- Exercism exercises
     { projectName      = "exercism"
     , projectDirectory = "~/code/exercism/"
     , projectStartHook = Just $ do
@@ -228,20 +256,26 @@ myProjects =
     }
   ]
 
+-- calcPrompt :: XPConfig -> String -> X ()
+-- calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
+--   ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
+--   where trim' = f . f where f = reverse . dropWhile isSpace
 
-calcPrompt :: XPConfig -> String -> X ()
-calcPrompt c ans = inputPrompt myXPConfig (trim' ans)
-  ?+ \input -> liftIO (runProcessWithInput "qalc" [input] "") >>= calcPrompt c
-  where trim' = f . f where f = reverse . dropWhile isSpace
+-- TODO Write a prompt that only filters apps with desktop files
+-- See: read_desktop_file in https://github.com/davatorium/rofi/blob/next/source/modes/drun.c for reference
+-- the idea is to:
+-- get a list of desktop files, read from it, and filter for only "Application" files
+
+
 
 myXPConfig :: XPConfig
-myXPConfig = def { font                = "xft:Liberation Mono:size=20"
+myXPConfig = def { font                = "xft:mononoki Nerd Font:size=20"
                  , bgColor             = "#2E3440"
                  , fgColor             = "#D8DEE9"
                  , bgHLight            = "#BF616A"
                  , fgHLight            = "#3B4252"
                  , borderColor         = "#535974"
-                 , promptBorderWidth   = 0
+                 , promptBorderWidth   = 5
                 -- , position            = Top
                  , position = CenteredAt { xpCenterY = 0.3, xpWidth = 0.5 }
                  , height              = 40
@@ -253,7 +287,8 @@ myXPConfig = def { font                = "xft:Liberation Mono:size=20"
                  , searchPredicate     = fuzzyMatch
                  , sorter              = fuzzySort
                  , alwaysHighlight     = True
-                 , maxComplRows        = Nothing      -- set to Just 5 for 5 rows
+                 , maxComplRows        = Just 10 -- Nothing      -- set to Just 5 for 5 rows
+                 , maxComplColumns        = Just 1 -- Nothing      -- set to Just 5 for 5 rows
                  }
 
 -- Scratchpads, very useful feature
@@ -297,11 +332,6 @@ myKeys conf =
     subKeys
       "System"
       [
-
-        -- use amixer to set the microphone volume: https://askubuntu.com/questions/27021/setting-microphone-input-volume-using-the-command-line
-        -- xbacklight controls the brightness: https://wiki.archlinux.org/index.php/backlight#xbacklight and https://askubuntu.com/questions/715306/xbacklight-no-outputs-have-backlight-property-no-sys-class-backlight-folder
-        -- xf86-video-intel
-    -- Audio, use pulseaudio to change volume.. TODO change to use xmonad estras maybe
         ( "<XF86AudioMute>"
         , addName "Toggle Mute"
           $ spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle"
@@ -351,7 +381,7 @@ myKeys conf =
            , ("M-b"       , addName "Launch My Browser" $ spawn myBrowser)
            , ("M-S-b"       , addName "Launch My Other Browser" $ spawn myBrowser2)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
-           , ("M-<Space>" , addName "Shell/App Prompt" $ shellPrompt myXPConfig)
+           , ("M-<Space>" , addName "Shell/App Prompt" $ spawn "rofi -show drun")
            , ("M-S-m", addName "Launch MPV" $ AL.launchApp myXPConfig "mpv")
            , ( "M-c"
              , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture"
@@ -382,6 +412,7 @@ myKeys conf =
              , addName "Reset layout" $ setLayout $ XMonad.layoutHook conf
              )
            ]
+  -- TODO I need to add a prompt for switching to windows quickly
     ^++^ subKeys
            "Windows"
            ([ ("M-S-c", addName "Kill" kill)
@@ -400,6 +431,7 @@ myKeys conf =
               $ windows
               . W.sink
               )
+            , ("M-w" , addName "Go to window" $ spawn "rofi -show window")
             ]
            ++ zipM' "M-"   "Navigate window" dirKeys   dirs windowGo   True
            ++ zipM' "M-C-" "Move window"     dirKeys   dirs windowSwap True
@@ -414,7 +446,9 @@ myKeys conf =
              ] )
     ^++^ subKeys
            "Workspaces"
-           (  [ ( "M-;"
+           (  [
+               -- TODO if possible, try to change these prompts to use rofi
+               ( "M-;"
                 , addName "Switch to Project" $ switchProjectPrompt myXPConfig
                 )
               , ( "M-S-;"
@@ -443,12 +477,12 @@ myKeys conf =
            [
   -- Use xmonad-contrib's builtin prompt rather than dmenu
   -- Open applications
-             ("M-q", addName "Qalc Prompt" $ calcPrompt myXPConfig "qalc") -- example calculator prompt. Also comes with a useful calculator!
-  -- PASS - the UNIX password manager
-           , ("M-p", addName "Get a Password" $ passPrompt myXPConfig)
-           , ( "M-S-p"
-             , addName "Generate a Password" $ passGeneratePrompt myXPConfig
-             )
+  --            ("M-q", addName "Qalc Prompt" $ calcPrompt myXPConfig "qalc") -- example calculator prompt. Also comes with a useful calculator!
+  -- -- PASS - the UNIX password manager
+            ("M-p", addName "Get a Password" $ passPrompt myXPConfig)
+  --          , ( "M-S-p"
+  --            , addName "Generate a Password" $ passGeneratePrompt myXPConfig
+  --            )
            -- , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
            -- , ( "M-C-S-p"
              --, addName "Remove a Password" $ passRemovePrompt myXPConfig
@@ -480,22 +514,43 @@ myStartupHook = do
   spawnOnce "~/.fehbg &"
 -- spawnOnce "emacs --daemon"
   -- spawnOnce "trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --transparent true --alpha 0 --tint 0x282c34  --height 22 &"
-  -- TODO add more useful daemons
-  -- spawnOnce "caffeine &"
   spawnOnce "dunst &"
   spawnOnce "/home/thanawat/.local/bin/trays.sh"
-  spawnOnce "taffybar &"
-  -- order matters when spawning theses
-  -- spawnOnce "nm-applet --indicator &"
-  -- spawnOnce "flameshot &"
-  -- spawnOnce "blueman-applet &"
+  -- spawnOnce "taffybar &"
 -- TODO Maybe when I spawn spotify I can have it goes to my fourth workspace
 --- nix-shell -p xorg.xwininfo - this program gets the window name!!
+
+-- copies a window to non-empty  workspaces (rather than all workspaces)
+copyToNonEmpty :: WindowSet -> WindowSet
+copyToNonEmpty s = foldr (copy . W.tag) s nonEmptyWSs 
+  where
+    nonEmptyWSs = filter (\w -> isJust $ W.stack w )  $ W.workspaces s
+
+
+-- neat trick - ManageHook is a monoid and "composeAll" is essentially mconcat
+-- and <+> is the infix mappend. It's not equivalent cus composeAll happens left-to-right
 myManageHook :: ManageHook
-myManageHook = manageSpawn <+> namedScratchpadManageHook myScratchPads <+> manageHook def
+myManageHook = composeAll [
+      manageHook def 
+      , manageDocks
+      , manageSpawn
+      , namedScratchpadManageHook myScratchPads
+
+      --
+      , title =? "Picture-in-Picture" <&&> className =? "firefox" -->
+      -- TODO copy to all windows that aren't empty
+        ( doRectFloat (W.RationalRect (1 % 4) (1 % 4) (1 % 2) (1 % 2)) <+> doF copyToNonEmpty )
+        -- sequence [  , doF copyToAll ]
+
+  ]
+
+               
 
 
 -- TODO I could write my own program to show the keybindings prettily
+-- TODO Wait, this is essentially just the IO monad..
+-- I can just embed a program to prettily show my keybinds here (if I figure out how to do syntax highlighting and stuff)??
+-- Might want to look into how "pass" works?
 showKeybindings :: [((KeyMask, KeySym), NamedAction)] -> NamedAction
 showKeybindings x = addName "Show Keybindings" $ io $ do
   h <- spawnPipe "zenity --text-info --font=terminus"
@@ -507,6 +562,7 @@ main = do
   -- xmproc <- spawnPipe "xmobar -x 0 ~/.xmonad/xmobars/xmobar-nord.conf"
   -- xmproc1 <- spawnPipe "xmobar -x 1 ~/.xmonad/xmobars/xmobar-nord.conf"
   xmonad
+    $ pagerHints
     $ dynamicProjects myProjects
     $ withNavigation2DConfig def -- for navigation keys to work properly
     $ addDescrKeys' ((mod4Mask, xK_slash), xMessage) myKeys
@@ -514,7 +570,8 @@ main = do
     $ ewmh
     -- $ pagerHints
     $ docks def
-        { manageHook         = myManageHook <+> manageDocks
+        { manageHook         =  myManageHook -- <+> manageHook def
+
         -- , logHook = dynamicLogWithPP myPP { ppOutput = \x -> hPutStrLn xmproc x
         --                                                   >> hPutStrLn xmproc1 x
         --                                   }
@@ -528,4 +585,5 @@ main = do
         , layoutHook         = myLayout
         , focusedBorderColor = "#BF616A"
         , normalBorderColor  = "#5E81AC"
+        -- , focusFollowsMouse = False
         }

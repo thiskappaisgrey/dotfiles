@@ -16,3 +16,6 @@ xmonad.state
 prompt-history
 # The compiled binary
 xmonad
+
+.direnv
+.dir-locals.el
