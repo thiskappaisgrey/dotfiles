@@ -84,7 +84,6 @@ import XMonad.Hooks.ManageHelpers  (doRectFloat)
 import System.Taffybar.Support.PagerHints (pagerHints)
 
 
-  
 import Data.Ratio  ( (%) )
 -- import XMonad.Layout.Simplest
 import           Data.Maybe (isJust)
@@ -96,8 +95,10 @@ import           Data.Maybe (isJust)
 
 -- Default apps
 myTerminal = "alacritty"
-myBrowser2 = "brave --profile-directory=\"Default\""
-myBrowser = "firefox"
+-- FIXME want to use termonad as my terminal but I don't really customize it anyways.. maybe I want to play around with it or something?
+-- myTerminal = "termonad"
+myBrowser = "brave --profile-directory=\"Default\""
+myBrowser2 = "firefox"
 -- myBrowser2 = "nyxt"
 
 
@@ -116,13 +117,18 @@ mySpacing i = spacingRaw True (Border i i i i) True (Border i i i i) True
 --                           Layouts                           --
 -----------------------------------------------------------------
 
+-- FIXME my layouts suck..
 myLayout =
   onWorkspace wsFloat simpleFloat
   $ onWorkspace wsGame (lessBorders Never $ avoidStruts Full) -- on the game workspace, only have the full layout
   -- these are my main layouts
   $ lessBorders Never
   $ avoidStruts (-- Simplest |||
-                 mirrorTall ||| mirrorTall2 ||| magnified ||| full)
+                 mirrorTall
+                 ||| tall
+                 -- ||| mirrorTall2
+                 -- ||| magnified
+                 ||| full)
  where
      -- default tiling algorithm partitions the screen into two panes
    -- add mySpacing to the composition to add spacing to tiled windows.
@@ -154,6 +160,7 @@ myLayout =
     -- Default proportion of screen occupied by master pane
     ratio   = 60 / 100
   mirrorTall = mySpacing 5 $ Mirror (Tall 1 (3/100) (4/5))
+  tall = mySpacing 5 $ (Tall 1 (3/100) (4/5))
   mirrorTall2 = mySpacing 5 $ Mirror (Tall 2 (3/100) (4/5))
 -- Number of windows in a workspace, not really needed though
 windowCount :: X (Maybe String)
@@ -172,11 +179,12 @@ windowCount =
 --                          Workspaces                         --
 -----------------------------------------------------------------
 wsMain = "main"
+wsSec = "sec"
 wsTerm = "term"
 wsFloat = "float"
 wsGame = "game"
 wsMusic = "music"
-wsSchool = "school"
+-- wsSchool = "school"
 wsGuitar = "guitar"
 wsXmonad = "xmonad"
 -- wsVidEdit = "vid-edit"
@@ -184,7 +192,7 @@ wsXmonad = "xmonad"
 
 -- TODO maybe have a keybind to bring up the relevant todo list for the day?
 -- Also, write an agenda view that shows the tasks that need to be done for the day + other stuff to do on the side?
-myWorkspaces = [wsMain, wsSchool, wsMusic, wsGame, wsXmonad, wsTerm ]
+myWorkspaces = [wsMain, wsSec, wsMusic, wsGame, wsXmonad, wsTerm ]
 myProjects :: [Project]
 myProjects =
   [ Project
@@ -201,10 +209,11 @@ myProjects =
                            spawnOn wsMain myEditor
                            -- runInTerm "-t ytop" "ytop"
     }
-  , Project { projectName = wsSchool
-            , projectDirectory = "~/code/spring-2022/"
-            , projectStartHook = Just $ do
-                spawnOn wsSchool (myEditor ++ " ~/code/spring-2022/")
+  , Project { projectName = wsSec
+            , projectDirectory = "~/"
+            , projectStartHook = Nothing
+              -- Just $ do
+              --   spawnOn wsSchool (myEditor ++ " ~/code/spring-2022/")
             }
   , Project { projectName      = wsFloat            , projectDirectory = "~"
             , projectStartHook = Nothing
@@ -382,14 +391,16 @@ myKeys conf =
            , ("M-S-b"       , addName "Launch My Other Browser" $ spawn myBrowser2)
            , ("M-<Return>", addName "Launch Terminal" $ spawn myTerminal)
            , ("M-<Space>" , addName "Shell/App Prompt" $ spawn "rofi -show drun")
+           , ("M-S-<Space>" , addName "Shell/App Prompt" $ spawn "rofi -show run")
            , ("M-S-m", addName "Launch MPV" $ AL.launchApp myXPConfig "mpv")
            , ( "M-c"
              , addName "Launch Org-capture" $ spawn "~/.emacs.d/bin/org-capture"
              )
            , ("M-s s"  , addName "Cancel submap" $ return ())
            , ("M-s M-s", addName "Cancel submap" $ return ())
-           , ("M-z", addName "Switch to halmak layout" $ spawn "setxkbmap us -variant norman")
-           , ("M-<Backspace>", addName "Switch to qwerty layout" $ spawn "setxkbmap us")
+           -- used to switch layouts
+           -- , ("M-z", addName "Switch to halmak layout" $ spawn "setxkbmap us -variant norman")
+           -- , ("M-<Backspace>", addName "Switch to qwerty layout" $ spawn "setxkbmap us")
            ]
     ^++^ subKeys
            "Scratchpads"
@@ -424,7 +435,6 @@ myKeys conf =
               -- Useful for the Full layout
             , ("M-S-"++(dirKeys !! 0), addName "Next Window" $ windows W.focusUp)
             , ("M-S-"++ (dirKeys !! 1), addName "Prev Window" $ windows W.focusDown)
-            , ("M-m", addName "Swap Master Window" $ windows W.swapMaster)
             , ( "M-t"
               , addName "Push windows back into tiling"
               $ withFocused
@@ -432,6 +442,7 @@ myKeys conf =
               . W.sink
               )
             , ("M-w" , addName "Go to window" $ spawn "rofi -show window")
+            , ("M-S-w", addName "Swap Master Window" $ windows W.swapMaster)
             ]
            ++ zipM' "M-"   "Navigate window" dirKeys   dirs windowGo   True
            ++ zipM' "M-C-" "Move window"     dirKeys   dirs windowSwap True
@@ -458,8 +469,8 @@ myKeys conf =
                 , addName "Switch current project Directory"
                   $ changeProjectDirPrompt myXPConfig
                 )
-              , ("M-'"  , addName "Next non-empty WS" nextNonEmptyWS)
-              , ("M-S-'", addName "Prev non-empty WS" prevNonEmptyWS)
+              , ("M-g"  , addName "Next non-empty WS" nextNonEmptyWS)
+              , ("M-S-g", addName "Prev non-empty WS" prevNonEmptyWS)
               ]
            ++ zipM "M-"
                    "View      ws"
@@ -486,7 +497,10 @@ myKeys conf =
            -- , ("M-C-p", addName "Edit a Password" $ passEditPrompt myXPConfig)
            -- , ( "M-C-S-p"
              --, addName "Remove a Password" $ passRemovePrompt myXPConfig
+             
              --)
+           , ("M-m", addName "Musical Symbols" $ spawn "rofimoji -f musical_symbols")
+             
            ]
 
 
